@@ -1,0 +1,24 @@
+{
+    "imxlinuxsdk.distroversion": "4.14.78",
+    "imxlinuxsdk.sdkversion": "4.14.78",
+    "imxlinuxsdk.gccversion": "7.3.0",
+    "imxlinuxsdk.targettriplet": "aarch64-poky-linux",
+    "imxlinuxsdk.targetarchtriplet": "aarch64-poky-linux",
+    "imxlinuxsdk.hosttriplet": "x86_64-pokysdk-linux",
+    "imxlinuxsdk.sdkroot": "/opt/fsl-imx-xwayland/4.14-sumo",
+    "imxlinuxsdk.sdktargetsysroot": "${config:imxlinuxsdk.sdkroot}/sysroots/${config:imxlinuxsdk.targettriplet}",
+    "imxlinuxsdk.sbinc" : "/opt/fsl-imx-xwayland/4.14-sumo/sysroots/aarch64-poky-linux/usr/crank/runtimes/linux-imx8yocto-armle-opengles_2.0-obj/include",
+    "imxlinuxsdk.sblib" : "/opt/fsl-imx-xwayland/4.14-sumo/sysroots/aarch64-poky-linux/usr/crank/runtimes/linux-imx8yocto-armle-opengles_2.0-obj/lib",
+    "imxlinuxsdk.sbcflags" : "-DGRE_TARGET_OS_linux",
+
+
+    "files.associations": {
+        "cstdio": "c",
+        "stdio.h": "c",
+        "types.h": "c",
+        "libc-header-start.h": "c",
+        "wordsize.h": "c",
+        "greio.h": "c",
+        "combi_events.h": "c"
+    }
+}

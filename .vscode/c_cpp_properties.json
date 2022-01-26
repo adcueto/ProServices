@@ -1,0 +1,48 @@
+{
+    "env": {
+        "distroversion": "4.14.78",
+        "sdkversion": "4.14.78",
+        "gccversion": "7.3.0",
+        "hosttriplet": "x86_64-pokysdk-linux",
+        "targettriplet": "aarch64-poky-linux",
+        "targetarchtriplet": "aarch64-poky-linux",
+        "sdkroot": "/opt/fsl-imx-xwayland/4.14-sumo"
+    },
+    "configurations": [
+        {
+            "name": "Linux okmx8mm",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${env.sdkroot}/sysroots/${env.targettriplet}/usr/include",
+                "${env.sdkroot}/sysroots/${env.hosttriplet}/usr/lib/${env.targetarchtriplet}/gcc/${env.targetarchtriplet}/${env.gccversion}/include",
+                "/opt/fsl-imx-xwayland/4.14-sumo/sysroots/aarch64-poky-linux/usr/crank/runtimes/linux-imx8yocto-armle-opengles_2.0-obj/include",
+                "${workspaceFolder}/external-resources"
+            ],
+            "defines": [
+                "__linux__",
+                "__aarch64__",
+                "_GNU_SOURCE",
+                "__LP64__"
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}",
+                    "${config:tdxlinuxsdk.sdkroot}/sysroots/${env.targettriplet}/usr/include",
+                    "${config:imxlinuxsdk.sdkroot}/sysroots/${env.hosttriplet}/usr/lib/${env.targetarchtriplet}/gcc/${env.targetarchtriplet}/${env.gccversion}/include"
+                ],
+                "limitSymbolsToIncludedHeaders": false,
+                "databaseFilename": ""
+            },
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-gcc-arm64",
+            "compilerPath": "/usr/bin/aarch64-linux-gnu-gcc",
+            "forcedInclude": [],
+            "compileCommands": "",
+            "compilerArgs": [
+                "-m32"
+            ]
+        }
+    ],
+    "version": 4
+}
