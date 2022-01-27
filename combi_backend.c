@@ -163,7 +163,7 @@ uint8_t Washing_Process(uint8_t modeSelected, uint8_t phaseStatus, uint32_t time
 			relayboard_state.washing_phase = 99;  //IDLE status
 		}
 
-		else if(timeElapse == 690)
+		else if(timeElapse == 695)
 		{	
 			sprintf(buffer_Tx,PHASE_WASH_OUT);
 			UART_Print(buffer_Tx);
@@ -209,7 +209,7 @@ uint8_t Washing_Process(uint8_t modeSelected, uint8_t phaseStatus, uint32_t time
 			printf("%s\n",buffer_Tx);
 		}
 
-		else if(timeElapse == 1340)
+		else if(timeElapse == 1300)
 		{
 			sprintf(buffer_Tx,PHASE_PREHEAT_BOILER);
 			UART_Print(buffer_Tx);
@@ -269,78 +269,78 @@ uint8_t Washing_Process(uint8_t modeSelected, uint8_t phaseStatus, uint32_t time
 
 	else if(modeSelected == 3)  //MODE_CLEAN_INTER_EVENT  
 	{
-		if(phaseStatus == 0)
+		if(phaseStatus == 0)		//	30 sec
 		{
-			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);	
+			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);	 
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 			relayboard_state.washing_phase = 99;  //IDLE status
 		}
 
-		else if(timeElapse == 3512)
+		else if(timeElapse == 3514	|| timeElapse == 2490)	//	120 sec
 		{
 			sprintf(buffer_Tx,PHASE_CLEAN_JET);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
-		else if(timeElapse == 3392)			//REPETIR DESDE AQUI
+		else if(timeElapse == 3394	|| timeElapse == 2370)	// 160 sec		//REPETIR DESDE AQUI
 		{	
 			sprintf(buffer_Tx,PHASE_CLEAN_CARE);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
-		else if(timeElapse == 1270)
+		else if(timeElapse == 3234	|| timeElapse == 2210)	//	180 sec
 		{
 			sprintf(buffer_Tx,PHASE_PREHEAT_BOILER);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
-		else if(timeElapse == 910)
+		else if(timeElapse == 3054	|| timeElapse == 2030)	//	30 sec	
 		{
 			sprintf(buffer_Tx,PHASE_FILL_COLD_CAMERA);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
-		else if(timeElapse == 884)
+		else if(timeElapse == 3024	|| timeElapse == 2000) //	900 sec
 		{
 			sprintf(buffer_Tx,PHASE_RECYCLE_WATER);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
-		else if(timeElapse == 584)			//REPETIR HASTA AQUI
+		else if(timeElapse == 2790  || timeElapse == 1100) //	300 sec	//REPETIR HASTA AQUI
 		{
 			sprintf(buffer_Tx,PHASE_CLEAN_JET);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 	
-		else if(timeElapse == 584)
+		else if(timeElapse == 800)  //  240 sec
 		{
 			sprintf(buffer_Tx,PHASE_WASH_OUT);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
-		else if(timeElapse == 404)
+		else if(timeElapse == 560)  // 30 sec
 		{
 			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);	
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
-		else if(timeElapse == 374)
+		else if(timeElapse == 530)  // 300 sec
 		{
 			sprintf(buffer_Tx,PHASE_DRYING_CAMERA);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
-		else if(timeElapse == 130)
+		else if(timeElapse == 230)
 		{
 			sprintf(buffer_Tx,PHASE_COOLING_CAMERA);
 			UART_Print(buffer_Tx);
