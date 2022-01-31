@@ -1,5 +1,8 @@
 #include <stdint.h>
 
+void UART_Print(char *pData);
+void Clear_Buffer(char *pData);
+
 #define UPDATE_STEAM_EVENT "update_steam"
 #define UPDATE_STEAM_FMT "1u1 percent"
 typedef struct {
