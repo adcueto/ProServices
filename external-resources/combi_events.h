@@ -1,7 +1,5 @@
 #include <stdint.h>
 
-void UART_Print(char *pData);
-void Clear_Buffer(char *pData);
 
 #define UPDATE_STEAM_EVENT "update_steam"
 #define UPDATE_STEAM_FMT "1u1 percent"
@@ -33,12 +31,39 @@ typedef struct {
 	uint8_t 		usertemp;
 } update_temp_probe_event_t;
 
+#define UPDATE_WASH_CYCLE_EVENT "update_washcycle"
+#define UPDATE_WASH_CYCLE_FMT "4u1 washtimer 1u1 usercycle"
+typedef struct {
+	uint32_t 		washtimer;
+	uint8_t 		usercycle;
+} update_wash_cycle_event_t;
+
+/*
+MODE_QUICK_POLISH_EVENT  	"mode_washing1"
+MODE_FULL_POLISH_EVENT   	"mode_washing2"
+MODE_CLEAN_INTER_EVENT  	"mode_washing3"
+MODE_CLEAN_QUICK_EVENT   	"mode_washing4"
+MODE_CLEAN_ECO_EVENT   		"mode_washing5"
+MODE_CLEAN_MID_EVENT   		"mode_washing6"
+MODE_CLEAN_FULL_EVENT   	"mode_washing7"
+
+*/
+
+
 #define ENABLE_ENCODER_EVENT "enable_encoder"
 #define ENABLE_ENCODER_FMT "1u1 parameter"
 typedef struct {
 	uint8_t 		parameter;
 } enable_encoder_event_t;
 
+//MAIN DATA RECIPE FOR AUTOMATIC MODE
+#define RECIPE_INFO_EVENT "update_recipeinfo"
+#define RECIPE_INFO_FMT "1u1 total_steps 1u1 actual_step 1u1 type_step"
+typedef struct {
+	uint8_t 		total_steps;
+	uint8_t			actual_step;
+	uint8_t			type_step;
+} recipe_info_event_t;
 
 //MAIN OVEN PARAMETERS AND STATUS STRUCTURE 
 #define COMBIOVEN_UPDATE_EVENT "combioven_update"
@@ -58,7 +83,19 @@ typedef struct {
 	uint8_t 		toggle_looptime;
 	//uint8_t 		units;
 } combioven_update_event_t;
-
+/*
+	toggle_state :  
+	0 = stop
+	1 = running free time / preheat / cooling / looptime
+	2 = running manual mode with time Ok
+	3 = running automatic by steps Ok
+	4 = running washing Ok
+	5 = ready for next step
+	6 = pause / cerrar puerta
+	7 = finished state
+	8 = conectar agua
+	9 = warning state
+*/
 
 //MAIN RELAY BOARD CONTROL AND STATUS STRUCTURE
 typedef struct {
@@ -74,22 +111,18 @@ typedef struct {
 
 
 //EVENTS INCOMING FRONT-END CRANK SOFTWARE
-#define MODE_CONVECTION_EVENT     	"mode_convection"
-#define MODE_COMBINED_EVENT   	  	"mode_combined"
-#define MODE_STEAM_EVENT   		  	"mode_steam"
-#define MODE_QUICK_POLISH_EVENT  	"mode_washing1"
-#define MODE_FULL_POLISH_EVENT   	"mode_washing2"
-#define MODE_CLEAN_INTER_EVENT  	"mode_washing3"
-#define MODE_CLEAN_QUICK_EVENT   	"mode_washing4"
-#define MODE_CLEAN_ECO_EVENT   		"mode_washing5"
-#define MODE_CLEAN_MID_EVENT   		"mode_washing6"
-#define MODE_CLEAN_FULL_EVENT   	"mode_washing7"
-#define TOGGLE_RUNNING_EVENT 	  	"toggle_running"
-#define TOGGLE_PREHEAT_EVENT 	  	"toggle_preheat"
-#define TOGGLE_COOLING_EVENT 	  	"toggle_cooling"
-#define TOGGLE_LOOPTIME_EVENT     	"toggle_looptime"
-#define TOGGLE_PROBE_EVENT   	  	"toggle_probe"
-#define TOGGLE_SPRAY_EVENT   	  	"toggle_spray"
+#define MODE_CONVECTION_EVENT   "mode_convection"
+#define MODE_COMBINED_EVENT   	"mode_combined"
+#define MODE_STEAM_EVENT   		"mode_steam"
+#define TOGGLE_MANUAL_EVENT 	"toggle_manual"
+#define TOGGLE_AUTOMATIC_EVENT 	"toggle_automatic"
+#define TOGGLE_WASHING_EVENT	"toggle_washing"
+#define TOGGLE_FINISHED_EVENT	"toggle_finished"
+#define TOGGLE_PREHEAT_EVENT 	"toggle_preheat"
+#define TOGGLE_COOLING_EVENT 	"toggle_cooling"
+#define TOGGLE_LOOPTIME_EVENT   "toggle_looptime"
+#define TOGGLE_PROBE_EVENT   	"toggle_probe"
+#define TOGGLE_SPRAY_EVENT   	"toggle_spray"
 
 
 //EVENTS IN/OUT COMING FROM UART RELAYBOARD 8 BYTES
@@ -98,6 +131,7 @@ typedef struct {
 #define MODE_STEAM				"#steamhi"
 #define MODE_PREHEAT		    "#preheat"
 #define MODE_COOLING			"#cooling"
+#define MODE_WASHING			"#washing"
 #define TOGGLE_PROBE_ENABLE		"#probeOn"
 #define TOGGLE_PROBE_DISABLE	"#probeOf"
 #define CURRENT_HUMIDITY		"#curh"
