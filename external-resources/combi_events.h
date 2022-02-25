@@ -32,9 +32,8 @@ typedef struct {
 } update_temp_probe_event_t;
 
 #define UPDATE_WASH_CYCLE_EVENT "update_washcycle"
-#define UPDATE_WASH_CYCLE_FMT "4u1 washtimer 1u1 usercycle"
+#define UPDATE_WASH_CYCLE_FMT "1u1 usercycle"
 typedef struct {
-	uint32_t 		washtimer;
 	uint8_t 		usercycle;
 } update_wash_cycle_event_t;
 
@@ -49,7 +48,6 @@ MODE_CLEAN_FULL_EVENT   	"mode_washing7"
 
 */
 
-
 #define ENABLE_ENCODER_EVENT "enable_encoder"
 #define ENABLE_ENCODER_FMT "1u1 parameter"
 typedef struct {
@@ -63,6 +61,7 @@ typedef struct {
 	uint8_t 		total_steps;
 	uint8_t			actual_step;
 	uint8_t			type_step;
+	uint8_t			completed_step;
 } recipe_info_event_t;
 
 //MAIN OVEN PARAMETERS AND STATUS STRUCTURE 
@@ -99,9 +98,10 @@ typedef struct {
 
 //MAIN RELAY BOARD CONTROL AND STATUS STRUCTURE
 typedef struct {
-	int16_t 		current_cam_temperature;
-	int16_t			current_probe_temperature;
-	uint16_t		current_humidity;	
+	uint16_t 		current_cam_temperature;
+	uint16_t		current_probe_temperature;
+	uint16_t		current_humidity;
+	uint8_t			target_ok;	
 	uint8_t			encoder_parameter;	
 	uint8_t			encoder_activated;
 	uint8_t 		door_status;
@@ -114,6 +114,7 @@ typedef struct {
 #define MODE_CONVECTION_EVENT   "mode_convection"
 #define MODE_COMBINED_EVENT   	"mode_combined"
 #define MODE_STEAM_EVENT   		"mode_steam"
+#define MODE_LOAD_EVENT   		"mode_load"
 #define TOGGLE_MANUAL_EVENT 	"toggle_manual"
 #define TOGGLE_AUTOMATIC_EVENT 	"toggle_automatic"
 #define TOGGLE_WASHING_EVENT	"toggle_washing"
@@ -132,8 +133,9 @@ typedef struct {
 #define MODE_PREHEAT		    "#preheat"
 #define MODE_COOLING			"#cooling"
 #define MODE_WASHING			"#washing"
-#define TOGGLE_PROBE_ENABLE		"#probeOn"
-#define TOGGLE_PROBE_DISABLE	"#probeOf"
+#define TARGET_OK				"#targtok"
+#define TOGGLE_PROBE_ENABLE		"#probeon"
+#define TOGGLE_PROBE_DISABLE	"#proboff"
 #define CURRENT_HUMIDITY		"#curh"
 #define CURRENT_TEMP_PROBE      "#curp"
 #define WARNING_MESSAGE			"#wrng"

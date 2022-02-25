@@ -182,14 +182,24 @@ void *receive_uart_thread(void *arg) {
 		    if ( strstr((char*)buffer_Rx, MODE_PREHEAT ) != NULL ) {
 				if (combioven_state.toggle_preheat == 1) {
 					combioven_state.toggle_preheat 	= 0;
-					combioven_state.toggle_state 	= 0;
+					
 					printf("toggle_preheat");
+					if(combioven_state.toggle_state == 3)
+					{
+							//next step
+						recipe_active.completed_step=1;
+					}
+					
+					else
+					  combioven_state.toggle_state 	= 0;
 				}
-				printf(" Receive Change data to: %d\n",combioven_state.toggle_preheat);
+				
+				printf(" Receive Change data to: %d\n",(uint8_t)combioven_state.toggle_preheat);
 				Clear_Buffer(buffer_Rx);
 				runningState=combioven_state.toggle_state;
 				dataChanged = 1;
 			}
+
 
 			else if ( strstr((char*)buffer_Rx, MODE_COOLING ) != NULL ) {
 				if (combioven_state.toggle_cooling == 1) {
@@ -197,13 +207,23 @@ void *receive_uart_thread(void *arg) {
 					combioven_state.toggle_state 	= 0;
 					printf(buffer_Rx,"toggle_cooling ");
 				}
-				printf(" Receive Change data to: %d\n",combioven_state.toggle_cooling);
+				printf(" Receive Change data to: %d\n",(uint8_t)combioven_state.toggle_cooling);
 			    Clear_Buffer(buffer_Rx);
 				runningState=combioven_state.toggle_state;
 				dataChanged = 1;
 			}
 
-			else if ( strstr((char *)buffer_Rx, CURRENT_TEMP_PROBE ) != NULL ) {
+			
+			else if ( strstr((char*)buffer_Rx, TARGET_OK ) != NULL ) {
+				if (combioven_state.toggle_probe == 1) {
+					relayboard_state.target_ok 	= 0;
+					printf(buffer_Rx,"target_ok");
+				}
+			    Clear_Buffer(buffer_Rx);
+			}
+
+
+			else if ( (strstr((char *)buffer_Rx, CURRENT_TEMP_PROBE ) != NULL ) && (combioven_state.toggle_probe == 1)) {
         		for(int i=5; i<8; i++)
         		{
         			if( cpyValue[i-5] == ' ' ){
@@ -213,7 +233,7 @@ void *receive_uart_thread(void *arg) {
             			cpyValue[i-5] = buffer_Rx[i];
         		}
         		relayboard_state.current_probe_temperature = atoi(cpyValue);
-				sprintf(buffer_Rx,"update_probe: %d", relayboard_state.current_probe_temperature );
+				sprintf(buffer_Rx,"Tprobe:%3d\n", (uint16_t)relayboard_state.current_probe_temperature );
 				printf("%s",buffer_Rx);
 			    Clear_Buffer(buffer_Rx);
 				if(relayboard_state.current_probe_temperature != combioven_state.current_probe)
@@ -221,6 +241,7 @@ void *receive_uart_thread(void *arg) {
 					combioven_state.current_probe = relayboard_state.current_probe_temperature;
 					dataChanged = 1;
 				}	
+				
 			}
 			
 
@@ -234,7 +255,7 @@ void *receive_uart_thread(void *arg) {
             			cpyValue[i-5] = buffer_Rx[i];
         		}
         		relayboard_state.current_humidity = atoi(cpyValue);
-				sprintf(buffer_Rx,"update_HR: %d", relayboard_state.current_humidity );
+				sprintf(buffer_Rx,"HR:%3d\n",(uint8_t)relayboard_state.current_humidity );
 				printf("%s",buffer_Rx);
 			    Clear_Buffer(buffer_Rx);
 				if(relayboard_state.current_humidity != combioven_state.current_humidity)
@@ -267,9 +288,10 @@ void *receive_uart_thread(void *arg) {
 					case 231:	previousState = combioven_state.toggle_state;
 								combioven_state.toggle_state = 8;//Water supply error
 								break;
-					case 116:	break;
-					case 117:	break;
-					case 118:	break;//Thermocouple opened
+					case 111:	combioven_state.toggle_state = 9;break;//Multipoint Thermocouple opened
+					case 114:	combioven_state.toggle_state = 9;break;//Cold-Camera Thermocouple opened
+					case 115:	combioven_state.toggle_state = 9;break;//Boiler Thermocouple opened
+					case 116:	break;//Main-Camera Thermocouple opened
 					case 510:   break;//Relayboard program failure
 					case 511:	break;//Communication failure
 					default: 	break;
@@ -289,6 +311,13 @@ void *receive_uart_thread(void *arg) {
 			    		UART_Print(buffer_Tx);
 						printf("%s",buffer_Tx);
 					}
+
+					else if(combioven_state.toggle_probe){
+						sprintf(buffer_Tx, TOGGLE_PROBE_ENABLE);
+			    		UART_Print(buffer_Tx);
+						printf("%s",buffer_Tx);
+					}
+
 					else{
 						sprintf(buffer_Tx,RUNNING_PROCESS);
 			    		UART_Print(buffer_Tx);
@@ -302,6 +331,11 @@ void *receive_uart_thread(void *arg) {
 					sprintf(buffer_Tx,RUNNING_PROCESS);
 			    	UART_Print(buffer_Tx);
 					printf("%s",buffer_Tx);
+					if (previousState == 5 && recipe_active.completed_step == 0)
+					{
+						recipe_active.completed_step=1;
+					}
+					
 				}
 
 				else if(runningState == 7) //finish state
@@ -340,7 +374,6 @@ void *receive_uart_thread(void *arg) {
 					   combioven_state.target_steam = MAX_TARGET_PERCENT;
 					else 
 					   combioven_state.target_steam = combioven_state.target_steam + 1;
-					printf("increase_steam: %d\n", combioven_state.target_steam);
 					Clear_Buffer(buffer_Rx);
 					dataChanged = 1;
 				}
@@ -350,7 +383,6 @@ void *receive_uart_thread(void *arg) {
 					   combioven_state.target_temperature = MAX_TARGET_TEMPERATURE;
 				else 
 					   combioven_state.target_temperature = combioven_state.target_temperature + 1;
-					printf("increase_temperature: %d\n", combioven_state.target_temperature);
 					Clear_Buffer(buffer_Rx);
 					dataChanged = 1;
 				}
@@ -359,8 +391,7 @@ void *receive_uart_thread(void *arg) {
 					if(combioven_state.target_time >= MAX_TARGET_TIME)
 					   combioven_state.target_time = MAX_TARGET_TIME;
 					else 
-					   combioven_state.target_time = combioven_state.target_time + 1;
-					printf("increase_time: %d\n", combioven_state.target_time);
+					   combioven_state.target_time = combioven_state.target_time + 4;
 					Clear_Buffer(buffer_Rx);
 					dataChanged = 1;
 				}
@@ -370,7 +401,6 @@ void *receive_uart_thread(void *arg) {
 					   combioven_state.target_fanspeed = MAX_TARGET_PERCENT;
 					else 
 					   combioven_state.target_fanspeed = combioven_state.target_fanspeed + 25;
-					printf("increase_fanspeed: %d\n", combioven_state.target_fanspeed);
 					Clear_Buffer(buffer_Rx);
 					dataChanged = 1;
 				}
@@ -383,7 +413,6 @@ void *receive_uart_thread(void *arg) {
 					   combioven_state.target_steam = 0;
 					else 
 					   combioven_state.target_steam = combioven_state.target_steam - 1;
-					printf("decrease_steam: %d\n", combioven_state.target_steam);
 					Clear_Buffer(buffer_Rx);
 					dataChanged = 1;
 				}
@@ -393,7 +422,6 @@ void *receive_uart_thread(void *arg) {
 					   combioven_state.target_temperature = 30;
 					else 
 					   combioven_state.target_temperature = combioven_state.target_temperature - 1;
-					printf("decrease_temperature: %d\n", combioven_state.target_temperature );
 					Clear_Buffer(buffer_Rx);
 					dataChanged = 1;
 				}
@@ -402,8 +430,7 @@ void *receive_uart_thread(void *arg) {
 					if(combioven_state.target_time <= 0)
 					   combioven_state.target_time = 0;
 					else
-					   combioven_state.target_time = combioven_state.target_time - 1;
-					printf("decrease_time: %d\n", combioven_state.target_time);
+					   combioven_state.target_time = combioven_state.target_time - 4;
 					Clear_Buffer(buffer_Rx);
 					dataChanged = 1;
 				}
@@ -413,7 +440,6 @@ void *receive_uart_thread(void *arg) {
 					   combioven_state.target_fanspeed = 25;
 					else 
 					   combioven_state.target_fanspeed = combioven_state.target_fanspeed - 25;
-					printf("decrease_fanspeed: %d\n", combioven_state.target_fanspeed);
 					Clear_Buffer(buffer_Rx);
 					dataChanged = 1;
 				}
@@ -431,7 +457,7 @@ void *receive_uart_thread(void *arg) {
 					case 1:		sprintf(buffer_Tx,"#stem%3d",(uint8_t) combioven_state.target_steam);
 								UART_Print(buffer_Tx);
 								break;
-					case 2:		sprintf(buffer_Tx,"#temp%3d",(uint8_t) combioven_state.target_temperature);
+					case 2:		sprintf(buffer_Tx,"#temp%3d",(uint16_t) combioven_state.target_temperature);
 								UART_Print(buffer_Tx);
 								break;
 					case 3:		sprintf(buffer_Tx,"#timr%d",(uint32_t) combioven_state.target_time);
@@ -443,11 +469,10 @@ void *receive_uart_thread(void *arg) {
 						break;
 					}
 					printf("%s\n",buffer_Tx);
-					sleep_ms(5);
 				}
 				else {
 				   timerEncoder++;
-				   sleep_ms(2);
+				   sleep_ms(1);
 				}
 				Clear_Buffer(buffer_Rx);
 			}
@@ -540,7 +565,6 @@ void *receive_front_thread(void *arg) {
 			sprintf(buffer_Tx,"#stem%3d",(uint8_t) combioven_state.target_steam);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
-			sleep_ms(5);
 			dataChanged = 1;
 		} 
 		
@@ -550,7 +574,6 @@ void *receive_front_thread(void *arg) {
 			sprintf(buffer_Tx,"#temp%3d",(uint16_t) combioven_state.target_temperature);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
-			sleep_ms(5);
 			dataChanged = 1;
 		} 
 
@@ -569,17 +592,15 @@ void *receive_front_thread(void *arg) {
 			sprintf(buffer_Tx,"#sped%3d",(uint8_t) combioven_state.target_fanspeed);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
-			sleep_ms(5);
 			dataChanged = 1;
 		}
 
 		else if (strcmp(event_name, UPDATE_TEMP_PROBE_EVENT) == 0) {
 			update_temp_probe_event_t* uidata = (update_temp_probe_event_t*)event_data;
 			combioven_state.target_probe = uidata->usertemp;
-			sprintf(buffer_Tx, "#tepb%3d", (uint8_t)combioven_state.target_probe);
+			sprintf(buffer_Tx, "#tepb%3d", (uint16_t)combioven_state.target_probe);
 			UART_Print(buffer_Tx);
 			printf("%s\n", buffer_Tx);
-			sleep_ms(5);
 			dataChanged = 1;
 		}
 
@@ -611,6 +632,13 @@ void *receive_front_thread(void *arg) {
 			printf("%s\n", buffer_Tx);
 		}
 
+		else if (strcmp(event_name, MODE_LOAD_EVENT) == 0) {
+			recipe_active.completed_step = 0;
+			sprintf(buffer_Tx,PAUSE_STOP_PROCESS);
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+		}
+
 		else if (strcmp(event_name, TOGGLE_SPRAY_EVENT) == 0) {
 			if ((runningState >=1 && runningState <= 3) && (combioven_state.toggle_cooling ==0)) {
 				sprintf(buffer_Tx, WATER_SPRAY_SHOT);
@@ -626,7 +654,7 @@ void *receive_front_thread(void *arg) {
 			timerEncoder = 0;
 			sprintf(buffer_Tx, ENCODER_ENABLE);
 			UART_Print(buffer_Tx);
-			sleep_ms(5);
+			//sleep_ms(5); 
 			printf("%s Sel: %d E: %d\n", buffer_Tx, relayboard_state.encoder_parameter, relayboard_state.encoder_activated);			
 		}
 
@@ -652,8 +680,8 @@ void *receive_front_thread(void *arg) {
 			    UART_Print(buffer_Tx);
 				printf("%s\n",buffer_Tx);
 			}
-			printf("Change data to: %d\n",combioven_state.toggle_state);
-			//dataChanged = 1;
+			printf("Change data to: %d\n",(uint8_t)combioven_state.toggle_state);
+			dataChanged = 1;
 		} 
 
 		else if (strcmp(event_name, TOGGLE_AUTOMATIC_EVENT) == 0) {
@@ -663,18 +691,29 @@ void *receive_front_thread(void *arg) {
 				printf("%s\n",buffer_Tx);
 				sleep_ms(5);
 				combioven_state.toggle_state = 3;
-				sprintf(buffer_Tx,RUNNING_PROCESS);
-			    UART_Print(buffer_Tx);
-				printf("%s\n",buffer_Tx);
+				if(recipe_active.type_step == 0)
+				{
+					sprintf(buffer_Tx,MODE_PREHEAT);
+			    	UART_Print(buffer_Tx);
+					printf("%s\n",buffer_Tx);
+					combioven_state.toggle_preheat  = 1;
+				}
+				else {
+					sprintf(buffer_Tx,RUNNING_PROCESS);
+			    	UART_Print(buffer_Tx);
+					printf("%s\n",buffer_Tx);
+				}
+				
 			} 
+
 			else {
 				combioven_state.toggle_state = 0;
 				sprintf(buffer_Tx,PAUSE_STOP_PROCESS);
 			    UART_Print(buffer_Tx);
 				printf("%s\n",buffer_Tx);
 			}
-			printf("Change data to: %d\n",combioven_state.toggle_state);
-			//dataChanged = 1;
+			printf("Change data to: %d\n",(uint8_t) combioven_state.toggle_state);
+			dataChanged = 1;
 		} 
 
 		else if (strcmp(event_name, TOGGLE_WASHING_EVENT) == 0) {
@@ -682,7 +721,11 @@ void *receive_front_thread(void *arg) {
 				sprintf(buffer_Tx, PAUSE_STOP_PROCESS);
 				UART_Print(buffer_Tx);
 				printf("%s\n", buffer_Tx);
-				sleep_ms(5);
+				sleep_ms(5);				
+				combioven_state.toggle_cooling	= 0;
+				combioven_state.toggle_looptime = 0;
+				combioven_state.toggle_probe	= 0;
+				combioven_state.toggle_preheat	= 0;
 				sprintf(buffer_Tx, MODE_WASHING);
 				UART_Print(buffer_Tx);
 				printf("%s\n", buffer_Tx);
@@ -693,7 +736,7 @@ void *receive_front_thread(void *arg) {
 				UART_Print(buffer_Tx);
 				printf("%s\n", buffer_Tx);
 			}
-			printf("Change data to: %d\n", combioven_state.toggle_state);
+			printf("Change data to: %d\n", (uint8_t) combioven_state.toggle_state);
 			dataChanged = 1;
 		}
 
@@ -701,12 +744,12 @@ void *receive_front_thread(void *arg) {
 			update_wash_cycle_event_t* uidata = (update_wash_cycle_event_t*)event_data;
 			relayboard_state.washing_mode = uidata->usercycle;
 			relayboard_state.washing_phase = 0;
-			combioven_state.toggle_state = 4;
+			combioven_state.toggle_state   = 4;
 			sprintf(buffer_Tx, RUNNING_PROCESS);
 			UART_Print(buffer_Tx);
 			printf("%s\n", buffer_Tx);
-			sprintf(buffer_Tx, "cycle:%d length:%d", (uint8_t)relayboard_state.washing_mode, (uint32_t)combioven_state.target_time);
-			printf("%s\n", buffer_Tx);
+			printf("cycle:%d length:%d\n", (uint8_t)relayboard_state.washing_mode, (uint32_t)combioven_state.target_time);
+			dataChanged = 1;
 		}
 
 		else if (strcmp(event_name, TOGGLE_FINISHED_EVENT) == 0) {
@@ -721,9 +764,10 @@ void *receive_front_thread(void *arg) {
 				combioven_state.toggle_state	= 0;
 			}
 			sleep_ms(5);
-			printf("Change data to: %d\n", combioven_state.toggle_state);
+			printf("Change data to: %d\n", (uint8_t) combioven_state.toggle_state);
 			dataChanged = 1;
 		}
+
 
 		else if (strcmp(event_name, TOGGLE_PREHEAT_EVENT) == 0) {
 			if (combioven_state.toggle_preheat == 0) {
@@ -733,12 +777,24 @@ void *receive_front_thread(void *arg) {
 				combioven_state.toggle_cooling 	= 0;
 				combioven_state.toggle_looptime = 0;
 				combioven_state.toggle_probe    = 0;
-				sleep_ms(5);
-				combioven_state.toggle_preheat  = 1;
-				combioven_state.toggle_state	= 1;
+				sleep_ms(2);
+				sprintf(buffer_Tx,"#temp%3d",(uint16_t) combioven_state.target_temperature);
+				UART_Print(buffer_Tx);
+				printf("%s\n",buffer_Tx);
+				sleep_ms(2);
+				sprintf(buffer_Tx,"#sped%3d",(uint8_t) combioven_state.target_fanspeed);
+				UART_Print(buffer_Tx);
+				printf("%s\n",buffer_Tx);
+				sleep_ms(2);
+				sprintf(buffer_Tx,"#stem%3d",(uint8_t) combioven_state.target_steam);
+				UART_Print(buffer_Tx);
+				printf("%s\n",buffer_Tx);
+				sleep_ms(2);
 				sprintf(buffer_Tx,MODE_PREHEAT);
 			    UART_Print(buffer_Tx);
 				printf("%s\n",buffer_Tx);
+				combioven_state.toggle_preheat  = 1;
+				combioven_state.toggle_state	= 1;
 			} 
 			else {
 				combioven_state.toggle_preheat = 0;
@@ -748,7 +804,7 @@ void *receive_front_thread(void *arg) {
 				printf("%s\n",buffer_Tx);
 			}
 			sleep_ms(5);
-			printf("Change data to: %d\n",combioven_state.toggle_preheat);
+			printf("Change data to: %d\n",(uint8_t)combioven_state.toggle_preheat);
 			dataChanged = 1;
 		}
 
@@ -760,7 +816,11 @@ void *receive_front_thread(void *arg) {
 				combioven_state.toggle_preheat 	= 0;
 				combioven_state.toggle_looptime = 0;
 				combioven_state.toggle_probe    = 0;
-				sleep_ms(5);
+				sleep_ms(2);
+				sprintf(buffer_Tx,"#temp050");
+				UART_Print(buffer_Tx);
+				printf("%s\n",buffer_Tx);
+				sleep_ms(2);
 				combioven_state.toggle_cooling  = 1;
 				combioven_state.toggle_state    = 1;	
 				sprintf(buffer_Tx, MODE_COOLING);
@@ -776,7 +836,7 @@ void *receive_front_thread(void *arg) {
 				printf("%s\n",buffer_Tx);
 			}
 			sleep_ms(5);
-			printf("Change data to: %d\n",combioven_state.toggle_cooling);
+			printf("Change data to: %d\n",(uint8_t)combioven_state.toggle_cooling);
 			dataChanged = 1;
 		}
 
@@ -808,7 +868,7 @@ void *receive_front_thread(void *arg) {
 				printf("%s\n", buffer_Tx);
 			}
 			sleep_ms(5);
-			printf("Change data to: %d\n", combioven_state.toggle_probe);
+			printf("Change data to: %d\n",(uint8_t)combioven_state.toggle_probe);
 			dataChanged = 1;
 		}
 
@@ -904,10 +964,12 @@ int main(int argc, char **argv) {
     tcsetattr(fd,TCSANOW,&newtio);     //commit the serial port 
     tcgetattr(fd,&oldtio);
 
+	//HANDSHAKE COMMUNICATION WITH RELAYBOARD
+
 	memset(buffer,0,sizeof(buffer));
     char test[3]="Ok";
-	printf("Serial COM relayboard init: %s\n",test);
-	//UART_Print(test); 
+	printf("Serial COM relayboard init: %s\n",test); 
+	//FOR TEST WHITOUT HANDSHAKE 
 
 	write(fd, test, strlen(test) + 1);
 	fd_set rd;
@@ -944,6 +1006,7 @@ int main(int argc, char **argv) {
 	} 
     //close(fd);  //Close port '/dev/ttymxc2'
     //end of serial port communication initialize
+    // END OF TESTING WITHOUT HANDSHAKE
 
 	//allocate memory for the thermostat state
 	memset(&combioven_state, 0, sizeof(combioven_state));
@@ -953,6 +1016,7 @@ int main(int argc, char **argv) {
 	relayboard_state.current_cam_temperature   	= 0;	
 	relayboard_state.current_probe_temperature 	= 0;
 	relayboard_state.current_humidity  			= 0;
+	relayboard_state.target_ok					= 0;
 	relayboard_state.encoder_parameter 			= 0;
 	relayboard_state.encoder_activated 			= 0;
 	relayboard_state.washing_mode				= 0;
@@ -973,6 +1037,7 @@ int main(int argc, char **argv) {
 	recipe_active.total_steps					= 0;
 	recipe_active.actual_step					= 0;
 	recipe_active.type_step						= 0;
+	recipe_active.completed_step				= 0;
 	//combioven_state.units = 1; //0-Farenheit 1-Celsius
 
 	if (init_mutex() != 0) {
@@ -1007,12 +1072,42 @@ int main(int argc, char **argv) {
 
 	memset(&event_UI_data, 0, sizeof(event_IO_data));
 
+/*
+	toggle_state :  
+	0 = stop
+	1 = running free time / preheat / cooling / looptime
+	2 = running manual mode with time Ok
+	3 = running automatic by steps Ok
+	4 = running washing Ok
+	5 = ready for next step
+	6 = pause / cerrar puerta
+	7 = finished state
+	8 = conectar agua
+	9 = warning state
+*/
+
+
 	while(1) {
 		sleep_ms(SNOOZE_TIME);
 		seconds = difftime(time(NULL),timer);
 
 	    lock_mutex();
-		if ( (seconds > 0.5) && (runningState == 2) && (combioven_state.toggle_looptime != 1) && (relayboard_state.door_status==1)) {
+		
+		//printf("state:%d\n",(uint8_t) runningState);
+		if ( (seconds > 0.5) && (runningState == 1) && (relayboard_state.door_status==1))
+		{
+			if((combioven_state.current_probe >= combioven_state.target_probe) && (combioven_state.toggle_probe == 1) && (relayboard_state.target_ok==1))
+			{				
+				combioven_state.toggle_state = 7;
+				runningState = combioven_state.toggle_state;
+				sprintf(buffer_Tx,FINISHED_PROCESS);
+			   	UART_Print(buffer_Tx);
+				printf("%s",buffer_Tx);
+				combioven_state.toggle_probe = 0;
+			}
+		}
+
+		else if ( (seconds > 0.5) && (runningState == 2) && (combioven_state.toggle_looptime != 1) && (relayboard_state.door_status==1)) {
 			if (combioven_state.target_time > 0){
 				combioven_state.target_time -= 1;
 				printf("seconds: %d\n",(uint32_t)combioven_state.target_time);
@@ -1030,7 +1125,7 @@ int main(int argc, char **argv) {
 
 		else if ((seconds > 0.5) && (runningState == 3) && (relayboard_state.door_status==1))
 		{
-			if (combioven_state.target_time > 0) {
+			if (combioven_state.target_time > 0 && recipe_active.type_step == 0) {
 				if(previousState == 5)
 				{
 					sleep_ms(5);
@@ -1053,11 +1148,10 @@ int main(int argc, char **argv) {
 				printf("%s", buffer_Tx);
 			}
 
-			else {
+			else if( recipe_active.completed_step==1 ){
 				sprintf(buffer_Tx, PAUSE_STOP_PROCESS);
 				UART_Print(buffer_Tx);
 				printf("%s", buffer_Tx);
-				sleep_ms(1000);
 				combioven_state.toggle_state = 5;
 				runningState = combioven_state.toggle_state;
 				previousState = runningState;
@@ -1066,32 +1160,21 @@ int main(int argc, char **argv) {
 			dataChanged = 1;
 		}
 		
-		else if( (seconds > 0.5) && (runningState == 4))
+		else if( (seconds > 0.5) && (runningState == 4) && (relayboard_state.door_status==1))
 		{	
-			if( relayboard_state.door_status==1 && combioven_state.target_time > 0)
+			if(   combioven_state.target_time > 0)
 			{			
 				combioven_state.target_time -= 1;
 				printf("seconds: %d\n",(uint32_t)combioven_state.target_time);
 				Washing_Process(relayboard_state.washing_mode, relayboard_state.washing_phase, combioven_state.target_time);
 			}
-			else if(relayboard_state.door_status==0 && combioven_state.target_time > 0)
+			else 
 			{
-				previousState = runningState; 
-				combioven_state.toggle_state = 6;
-				runningState = combioven_state.toggle_state;
-				sprintf(buffer_Tx, PAUSE_STOP_PROCESS);
-				UART_Print(buffer_Tx);
-				printf("%s", buffer_Tx);
-			}
-
-			else {
 				combioven_state.toggle_state = 7;
 				runningState = combioven_state.toggle_state;
-				relayboard_state.washing_mode=0;
 				sprintf(buffer_Tx,FINISHED_PROCESS);
 			    UART_Print(buffer_Tx);
 				printf("%s",buffer_Tx);
-				sleep_ms(10);
 			}
 			timer = time(NULL);
 			dataChanged = 1;
@@ -1101,10 +1184,9 @@ int main(int argc, char **argv) {
 		{
 			combioven_state.toggle_state = 0;
 			runningState = combioven_state.toggle_state;
-			printf("Change data to: %d\n", combioven_state.toggle_state);
+			printf("Change data to: %d\n", (uint8_t)combioven_state.toggle_state);
 			dataChanged = 1;
 		}
-
 		unlock_mutex();
 
 	
@@ -1291,78 +1373,185 @@ void Washing_Process(uint8_t modeSelected, uint8_t phaseStatus, uint32_t timeEla
 			relayboard_state.washing_phase = 99;  //IDLE status
 		}
 
-		else if(timeElapse == 3575	|| timeElapse == 1895)	//	120 sec
+		else if(timeElapse == 2431 )	//	120 sec
 		{
-			sprintf(buffer_Tx, PAUSE_STOP_PROCESS);
-			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
-			sleep_ms(100);
 			sprintf(buffer_Tx,PHASE_CLEAN_JET);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
-		else if(timeElapse == 3465	|| timeElapse == 1775)	// 190 sec		//REPETIR DESDE AQUI
+		else if(timeElapse == 2311 )	// 190 sec		//REPETIR DESDE AQUI
 		{	
-			sprintf(buffer_Tx, PAUSE_STOP_PROCESS);
-			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
-			sleep_ms(100);
 			sprintf(buffer_Tx,PHASE_CLEAN_CARE);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
-		else if(timeElapse == 3270	|| timeElapse == 1585)	//	180 sec
+		else if(timeElapse == 2121 )	//	180 sec
 		{
 			sprintf(buffer_Tx,PHASE_PREHEAT_BOILER);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
-		else if(timeElapse == 3080	|| timeElapse == 1405)	//	25 sec	
+		else if(timeElapse == 1941 )	//	25 sec	
 		{
 			sprintf(buffer_Tx,PHASE_FILL_COLD_CAMERA);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
-		else if(timeElapse == 3050	|| timeElapse == 1380) //	900 sec
+		else if(timeElapse == 1916 ) //	900 sec
 		{
 			sprintf(buffer_Tx,PHASE_RECYCLE_WATER);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
-		else if(timeElapse == 2195  || timeElapse == 1180) //	240-300 sec	//REPETIR HASTA AQUI
+		else if(timeElapse == 1016 ) //	240-300 sec	//REPETIR HASTA AQUI
 		{
 			sprintf(buffer_Tx,PHASE_CLEAN_JET);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 	
-		else if(timeElapse == 1000)  //  420 sec
+		else if(timeElapse == 716 )  //  420 sec
 		{
 			sprintf(buffer_Tx,PHASE_WASH_OUT);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
-		else if(timeElapse == 560)  // 25 sec
+		else if(timeElapse == 296)  // 25 sec
 		{
 			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);	
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
-		else if(timeElapse == 535)  // 300 sec
+		else if(timeElapse == 271)  // 300 sec
 		{
 			sprintf(buffer_Tx,PHASE_DRYING_CAMERA);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
-		else if(timeElapse == 230)
+		else if(timeElapse == 135)
+		{
+			sprintf(buffer_Tx,PHASE_COOLING_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+		}
+	}
+
+	else if(modeSelected == 4)  //MODE_CLEAN_RAPIDO  
+	{
+		if(phaseStatus == 0)							//25 sec
+		{
+			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);	 
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+			relayboard_state.washing_phase = 99;  //IDLE status
+		}
+
+		else if(timeElapse == 2431 )	//	120 sec
+		{
+			sprintf(buffer_Tx,PHASE_CLEAN_JET);
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+		}
+
+		else if(timeElapse == 2121 )	//	180 sec
+		{
+			sprintf(buffer_Tx,PHASE_PREHEAT_BOILER);
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+		}
+
+		else if(timeElapse == 1941 )	//	25 sec	
+		{
+			sprintf(buffer_Tx,PHASE_FILL_COLD_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+		}
+
+		else if(timeElapse == 1916 ) //	900 sec
+		{
+			sprintf(buffer_Tx,PHASE_RECYCLE_WATER);
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+		}
+
+		else if(timeElapse == 1016 ) //	240-300 sec	//REPETIR HASTA AQUI
+		{
+			sprintf(buffer_Tx,PHASE_CLEAN_JET);
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+		}
+	
+		else if(timeElapse == 716 )  //  420 sec
+		{
+			sprintf(buffer_Tx,PHASE_WASH_OUT);
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+		}
+
+		else if(timeElapse == 296)  // 25 sec
+		{
+			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);	
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+		}
+
+		else if(timeElapse == 1016 ) //	240-300 sec	//REPETIR HASTA AQUI
+		{
+			sprintf(buffer_Tx,PHASE_CLEAN_CARE);
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+		}
+		else if(timeElapse == 1941 )	//	25 sec	
+		{
+			sprintf(buffer_Tx,PHASE_FILL_COLD_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+		}
+		
+		else if(timeElapse == 1916 ) //	900 sec
+		{
+			sprintf(buffer_Tx,PHASE_RECYCLE_WATER);
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+		}
+
+		else if(timeElapse == 716 )  //  420 sec
+		{
+			sprintf(buffer_Tx,PHASE_WASH_OUT);
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+		}
+
+		else if(timeElapse == 296)  // 25 sec
+		{
+			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);	
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+		}
+
+		else if(timeElapse == 2121 )	//	180 sec
+		{
+			sprintf(buffer_Tx,PHASE_PREHEAT_BOILER);
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+		}
+
+		else if(timeElapse == 271)  // 300 sec
+		{
+			sprintf(buffer_Tx,PHASE_DRYING_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+		}
+
+		else if(timeElapse == 135)
 		{
 			sprintf(buffer_Tx,PHASE_COOLING_CAMERA);
 			UART_Print(buffer_Tx);
