@@ -45,7 +45,6 @@ MODE_CLEAN_QUICK_EVENT   	"mode_washing4"
 MODE_CLEAN_ECO_EVENT   		"mode_washing5"
 MODE_CLEAN_MID_EVENT   		"mode_washing6"
 MODE_CLEAN_FULL_EVENT   	"mode_washing7"
-
 */
 
 #define ENABLE_ENCODER_EVENT "enable_encoder"
@@ -61,7 +60,6 @@ typedef struct {
 	uint8_t 		total_steps;
 	uint8_t			actual_step;
 	uint8_t			type_step;
-	uint8_t			completed_step;
 } recipe_info_event_t;
 
 //MAIN OVEN PARAMETERS AND STATUS STRUCTURE 
@@ -107,6 +105,7 @@ typedef struct {
 	uint8_t 		door_status;
 	uint8_t			washing_mode;
 	uint8_t			washing_phase;
+	uint8_t			completed_step;
 } relayboard_update_event_t;
 
 
