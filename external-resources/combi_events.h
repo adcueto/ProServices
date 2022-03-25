@@ -55,11 +55,11 @@ typedef struct {
 
 //MAIN DATA RECIPE FOR AUTOMATIC MODE
 #define RECIPE_INFO_EVENT "update_recipeinfo"
-#define RECIPE_INFO_FMT "1u1 total_steps 1u1 actual_step 1u1 type_step"
+#define RECIPE_INFO_FMT "1u1 totalsteps 1u1 actualstep 1u1 typestep"
 typedef struct {
-	uint8_t 		total_steps;
-	uint8_t			actual_step;
-	uint8_t			type_step;
+	uint8_t 		totalsteps;
+	uint8_t			actualstep;
+	uint8_t			typestep;
 } recipe_info_event_t;
 
 //MAIN OVEN PARAMETERS AND STATUS STRUCTURE 
