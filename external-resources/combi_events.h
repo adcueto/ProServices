@@ -64,12 +64,13 @@ typedef struct {
 
 //MAIN OVEN PARAMETERS AND STATUS STRUCTURE 
 #define COMBIOVEN_UPDATE_EVENT "combioven_update"
-#define COMBIOVEN_UPDATE_FMT "4u1 target_time 2u1 target_temperature 2u1 current_probe 2u1 current_humidity 1u1 target_steam 1u1 target_fanspeed 1u1 target_probe 1u1 toggle_preheat 1u1 toggle_cooling 1u1 toggle_state 1u1 toggle_probe 1u1 toggle_looptime"
+#define COMBIOVEN_UPDATE_FMT "4u1 target_time 2u1 target_temperature 2u1 current_probe 2u1 current_humidity 2u1 current_temperature 1u1 target_steam 1u1 target_fanspeed 1u1 target_probe 1u1 toggle_preheat 1u1 toggle_cooling 1u1 toggle_state 1u1 toggle_probe 1u1 toggle_looptime"
 typedef struct {
 	uint32_t		target_time;
 	uint16_t 		target_temperature;
 	uint16_t		current_probe;
 	uint16_t		current_humidity;
+	uint16_t		current_temperature;
 	uint8_t 		target_steam;
 	uint8_t			target_fanspeed;
 	uint8_t			target_probe;		
@@ -99,13 +100,14 @@ typedef struct {
 	uint16_t 		current_cam_temperature;
 	uint16_t		current_probe_temperature;
 	uint16_t		current_humidity;
-	uint8_t			target_ok;	
 	uint8_t			encoder_parameter;	
 	uint8_t			encoder_activated;
 	uint8_t 		door_status;
 	uint8_t			washing_mode;
 	uint8_t			washing_phase;
 	uint8_t			completed_step;
+	uint8_t			last_step;
+	uint8_t			warning_code;
 } relayboard_update_event_t;
 
 
@@ -132,11 +134,10 @@ typedef struct {
 #define MODE_PREHEAT		    "#preheat"
 #define MODE_COOLING			"#cooling"
 #define MODE_WASHING			"#washing"
-#define TARGET_OK				"#targtok"
-#define TOGGLE_PROBE_ENABLE		"#probeon"
-#define TOGGLE_PROBE_DISABLE	"#proboff"
+#define GET_EXTERN_PROBE_TEMP	"#extrnpb"
 #define CURRENT_HUMIDITY		"#curh"
-#define CURRENT_TEMP_PROBE      "#curp"
+#define CURRENT_TEMP_PROBE      "#tprb"
+#define	CURRENT_CAM_TEMPERATURE	"#tcam"
 #define WARNING_MESSAGE			"#wrng"
 #define ENCODER_INCREASE		"#encodr+"
 #define ENCODER_DECREASE		"#encodr-"
