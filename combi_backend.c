@@ -359,8 +359,8 @@ void *receive_uart_thread(void *arg) {
 
 
 			else if ( strstr((char *)buffer_Rx, DOOR_OPEN ) != NULL ) {
-        		relayboard_state.door_status=0;
-				if(combioven_state.toggle_cooling==0 && runningState >=1 && runningState <= 4 )
+        		relayboard_state.door_status = 0;
+				if(combioven_state.toggle_cooling == 0 && runningState >=1 && runningState <= 4 )
 				{
 					previousState = combioven_state.toggle_state;
 					relayboard_state.encoder_activated = 8;   //STOP READ ENCODER
@@ -492,7 +492,7 @@ void *receive_uart_thread(void *arg) {
 			else if ( (strcmp(buffer_Rx, ENCODER_ZERO_POSITION ) == 0) && (relayboard_state.encoder_activated < 8)) {
 				//printf("timE:%d\n",(uint8_t)relayboard_state.encoder_activated);
 				Clear_Buffer(buffer_Rx);
-				if( relayboard_state.encoder_activated == 7 )
+				if( relayboard_state.encoder_activated == 6 )
 				{
 					relayboard_state.encoder_activated = 8;
 					switch (relayboard_state.encoder_parameter)
@@ -761,6 +761,17 @@ void *receive_front_thread(void *arg) {
 					relayboard_state.completed_step = 0;
 				}
 
+				else if(recipe_active.typestep == 3)
+				{
+					sprintf(buffer_Tx,RUNNING_PROCESS);
+			    	UART_Print(buffer_Tx);
+					printf("%s\n",buffer_Tx);
+					relayboard_state.completed_step = 0;
+					combioven_state.toggle_probe  = 1;
+					combioven_state.current_probe = 0;
+					combioven_state.current_temperature = 0;
+				}
+
 				else
 				{
 					sprintf(buffer_Tx,PAUSE_STOP_PROCESS);
@@ -916,6 +927,7 @@ void *receive_front_thread(void *arg) {
 				combioven_state.target_time		= 0;
 				combioven_state.toggle_preheat	= 0;
 				combioven_state.current_temperature = 0;
+				combioven_state.current_probe = 0;
 				if(relayboard_state.door_status==1){
 					sprintf(buffer_Tx,RUNNING_PROCESS);
 			    	UART_Print(buffer_Tx);
@@ -1040,7 +1052,7 @@ int main(int argc, char **argv) {
     char test[3]="Ok";
 	printf("Serial COM relayboard init: %s\n",test); 
 	//FOR TEST WHITOUT HANDSHAKE 
-
+/*
 	write(fd, test, strlen(test) + 1);
 	fd_set rd;
     while(1){
@@ -1077,7 +1089,7 @@ int main(int argc, char **argv) {
     //close(fd);  //Close port '/dev/ttymxc2'
     //end of serial port communication initialize
     // END OF TESTING WITHOUT HANDSHAKE
-
+*/
 	//allocate memory for the thermostat state
 	memset(&combioven_state, 0, sizeof(combioven_state));
 	memset(&relayboard_state, 0, sizeof(relayboard_state));
@@ -1230,7 +1242,7 @@ int main(int argc, char **argv) {
 		}
 
 		//running automatic by steps Ok
-		else if ((seconds > 0.5) && (runningState == 3) && (relayboard_state.door_status==1))
+		else if ((seconds > 1) && (runningState == 3) && (relayboard_state.door_status==1))
 		{
 			if(recipe_active.typestep == 0)
 			{
@@ -1291,6 +1303,37 @@ int main(int argc, char **argv) {
 
 				timer = time(NULL);
 				dataChanged = 1;
+			}
+
+			else if(recipe_active.typestep == 3)
+			{
+				if ((combioven_state.current_probe >= combioven_state.target_probe) && (combioven_state.current_temperature >= combioven_state.target_temperature)) {
+					if(recipe_active.actualstep == recipe_active.totalsteps) 
+					{
+						combioven_state.toggle_state = 7;
+						runningState = combioven_state.toggle_state;
+						sprintf(buffer_Tx, FINISHED_PROCESS);
+						UART_Print(buffer_Tx);
+						printf("%s", buffer_Tx);
+					}
+					
+					else
+					{
+						combioven_state.toggle_state = 5;
+						relayboard_state.completed_step = 0;
+						runningState = combioven_state.toggle_state;
+						sleep_ms(500);
+					}
+					dataChanged = 1;
+				}
+
+				else
+				{
+					sprintf(buffer_Tx, GET_EXTERN_PROBE_TEMP);
+					UART_Print(buffer_Tx);
+					printf("%s\n", buffer_Tx);
+				}
+				timer = time(NULL);
 			}
 		}
 		
