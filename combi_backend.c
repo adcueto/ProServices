@@ -1052,7 +1052,7 @@ int main(int argc, char **argv) {
     char test[3]="Ok";
 	printf("Serial COM relayboard init: %s\n",test); 
 	//FOR TEST WHITOUT HANDSHAKE 
-/*
+
 	write(fd, test, strlen(test) + 1);
 	fd_set rd;
     while(1){
@@ -1089,7 +1089,7 @@ int main(int argc, char **argv) {
     //close(fd);  //Close port '/dev/ttymxc2'
     //end of serial port communication initialize
     // END OF TESTING WITHOUT HANDSHAKE
-*/
+
 	//allocate memory for the thermostat state
 	memset(&combioven_state, 0, sizeof(combioven_state));
 	memset(&relayboard_state, 0, sizeof(relayboard_state));
@@ -1407,349 +1407,295 @@ int main(int argc, char **argv) {
  ****************************************************************************************************************************/
 void Washing_Process(uint8_t modeSelected, uint8_t phaseStatus, uint32_t timeElapse)
 {
-	if(modeSelected == 1)  //MODE_QUICK_POLISH_EVENT
+
+	switch (modeSelected)
 	{
-		if(phaseStatus == 0)
-		{
-			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);
+	case 1:
+		if (phaseStatus == 0) {
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 			relayboard_state.washing_phase = 99;  //IDLE status
 		}
 
-		else if(timeElapse == 695)
-		{	
-			sprintf(buffer_Tx,PHASE_WASH_OUT);
+		else if (timeElapse == 695) {
+			sprintf(buffer_Tx, PHASE_WASH_OUT);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 420)
-		{
-			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);
+		else if (timeElapse == 420) {
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 390)
-		{
-			sprintf(buffer_Tx,PHASE_DRYING_CAMERA);
+		else if (timeElapse == 390) {
+			sprintf(buffer_Tx, PHASE_DRYING_CAMERA);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
-		//DrenarResiduosyVaciarCaldera()
-		//LlenarCalderaSinPastillas()
-		//EjecutarCleanJet()
-		//DrenarResiduosyVaciarCaldera()
-		//SecarCamara()
-		//FinishState()
-	}
+		break;
 
 
-	else if(modeSelected == 2)  //MODE_FULL_POLISH_EVENT
-	{
-		if(phaseStatus == 0)
-		{
-			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);	
+	case 2:
+		if (phaseStatus == 0) {
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 			relayboard_state.washing_phase = 99;  //IDLE status
 		}
 
-		else if(timeElapse == 1475)
-		{	
-			sprintf(buffer_Tx,PHASE_CLEAN_CARE);
+		else if (timeElapse == 1475) {
+			sprintf(buffer_Tx, PHASE_CLEAN_CARE);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 1300)
-		{
-			sprintf(buffer_Tx,PHASE_PREHEAT_BOILER);
+		else if (timeElapse == 1300) {
+			sprintf(buffer_Tx, PHASE_PREHEAT_BOILER);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 1165)
-		{
-			sprintf(buffer_Tx,PHASE_FILL_COLD_CAMERA);
+		else if (timeElapse == 1165) {
+			sprintf(buffer_Tx, PHASE_FILL_COLD_CAMERA);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 1140)
-		{
-			sprintf(buffer_Tx,PHASE_RECYCLE_WATER);
+		else if (timeElapse == 1140) {
+			sprintf(buffer_Tx, PHASE_RECYCLE_WATER);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 780)
-		{
-			sprintf(buffer_Tx,PHASE_WASH_OUT);
+		else if (timeElapse == 780) {
+			sprintf(buffer_Tx, PHASE_WASH_OUT);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 540)
-		{
-			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);	
+		else if (timeElapse == 540) {
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 510)
-		{
-			sprintf(buffer_Tx,PHASE_DRYING_CAMERA);
+		else if (timeElapse == 510) {
+			sprintf(buffer_Tx, PHASE_DRYING_CAMERA);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 150)
-		{
-			sprintf(buffer_Tx,PHASE_COOLING_CAMERA);
+		else if (timeElapse == 150) {
+			sprintf(buffer_Tx, PHASE_COOLING_CAMERA);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
-		/*
-		DrenarResiduosyVaciarCaldera()
-		LlenarCalderaConPastillas()
-		PrecalentarVapor80C()
-		EjecutarCleanJet()
-		DrenarResiduosyVaciarCaldera()
-		SecarCamara()
-		FinishState()	*/	
-	}
+		break;
 
-	else if(modeSelected == 3)  //MODE_CLEAN_INTER_EVENT  
-	{
-		if(phaseStatus == 0)							//25 sec
-		{
-			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);	 
+
+	case 3:
+		if (phaseStatus == 0) {							//25 sec
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
-			relayboard_state.washing_phase = 99;  //IDLE status
+			printf("%s\n", buffer_Tx);
+			relayboard_state.washing_phase = 99;  		//IDLE status
 		}
 
-		else if(timeElapse == 2431 )	//	120 sec
-		{
-			sprintf(buffer_Tx,PHASE_CLEAN_JET);
+		else if (timeElapse == 2431) {					//	120 sec
+			sprintf(buffer_Tx, PHASE_CLEAN_JET);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 2311 )	//	180 sec    
-		{
-			sprintf(buffer_Tx,PHASE_PREHEAT_BOILER);
+		else if (timeElapse == 2311 || timeElapse == 1581) {	//	180 sec  // REPETIR DESDE AQUI   
+			sprintf(buffer_Tx, PHASE_PREHEAT_BOILER);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 2131 || timeElapse == 1461) {	//	25 sec	
+			sprintf(buffer_Tx, PHASE_FILL_COLD_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
 		//DISPENSAR DETERGENTE
 
-		else if(timeElapse == 2131 )	//	25 sec	
-		{
-			sprintf(buffer_Tx,PHASE_FILL_COLD_CAMERA);
+		else if (timeElapse == 2106 || timeElapse == 1436) {  // 600 sec
+			sprintf(buffer_Tx, PHASE_RECYCLE_WATER);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 2106 )   // 600 sec
-		{
-			sprintf(buffer_Tx,PHASE_RECYCLE_WATER);
+		else if (timeElapse == 1606 || timeElapse == 836) {  // 25 sec
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 1506)  // 25 sec
-		{
-			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);	
+		else if (timeElapse == 811) {					//	180 sec	
+			sprintf(buffer_Tx, PHASE_CLEAN_JET);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 1481 )	//	180 sec    
-		{
-			sprintf(buffer_Tx,PHASE_PREHEAT_BOILER);
+		else if (timeElapse == 631 || timeElapse == 401) {  // 25 sec    // REPETIR HASTA AQUI
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		//DISPENSAR DETERGENTE
-
-		else if(timeElapse == 1301 )	//	25 sec	
-		{
-			sprintf(buffer_Tx,PHASE_FILL_COLD_CAMERA);
+		else if (timeElapse == 606) {	//	25 sec	
+			sprintf(buffer_Tx, PHASE_FILL_COLD_CAMERA);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 1276 )	//	400 sec
-		{
-			sprintf(buffer_Tx,PHASE_RECYCLE_WATER);
+		else if (timeElapse == 581) {	//	180 sec
+			sprintf(buffer_Tx, PHASE_RECYCLE_WATER);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 611 )  // 25 sec
-		{
-			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);	
+		else if (timeElapse == 450) {	//	180 sec
+			sprintf(buffer_Tx, PHASE_RECYCLE_WATER);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
-		}
-		
-		else if(timeElapse == 586 ) //	180 sec	
-		{
-			sprintf(buffer_Tx,PHASE_CLEAN_JET);
-			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 406 )  // 25 sec
-		{
-			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);	
+		else if (timeElapse == 240) {  // 300 sec
+			sprintf(buffer_Tx, PHASE_DRYING_CAMERA);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 381 )  // 300 sec
-		{
-			sprintf(buffer_Tx,PHASE_DRYING_CAMERA);
+		else if (timeElapse == 120) {
+			sprintf(buffer_Tx, PHASE_COOLING_CAMERA);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
+		break;
 
-		else if(timeElapse == 200 )
-		{
-			sprintf(buffer_Tx,PHASE_COOLING_CAMERA);
-			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
-		}
-	}
 
-	else if(modeSelected == 4)  //MODE_CLEAN_RAPIDO  
-	{
-		if(phaseStatus == 0)							//25 sec
-		{
-			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);	 
+	case 4:
+		if (phaseStatus == 0) {				//	25 sec
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 			relayboard_state.washing_phase = 99;  //IDLE status
 		}
 
-		else if(timeElapse == 3935 )	//	120 sec
-		{
-			sprintf(buffer_Tx,PHASE_CLEAN_JET);
+		else if (timeElapse == 3935) {		//	120 sec
+			sprintf(buffer_Tx, PHASE_CLEAN_JET);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 3815 )	//	180 sec
-		{
-			sprintf(buffer_Tx,PHASE_DRYING_CAMERA); //sprintf(buffer_Tx,PHASE_PREHEAT_BOILER);
+		else if (timeElapse == 3815) {		//	180 sec
+			sprintf(buffer_Tx, PHASE_DRYING_CAMERA); //sprintf(buffer_Tx,PHASE_PREHEAT_BOILER);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 3635 || timeElapse == 3160)	//	25 sec	
-		{
-			sprintf(buffer_Tx,PHASE_FILL_COLD_CAMERA);
+		else if (timeElapse == 3635 || timeElapse == 3160) {	//	25 sec   //REPETIR DESDE AQUI		
+			sprintf(buffer_Tx, PHASE_FILL_COLD_CAMERA);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 3610 || timeElapse == 3135) //	900 sec
-		{
-			sprintf(buffer_Tx,PHASE_RECYCLE_WATER);
+		else if (timeElapse == 3610 || timeElapse == 3135) {	//  900 sec
+			sprintf(buffer_Tx, PHASE_RECYCLE_WATER);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 2685 )	//	25 sec	
-		{
-			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);
+		else if (timeElapse == 2685) {		//	25 sec	
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 2660 ) //	240-300 sec	//REPETIR HASTA AQUI
-		{
-			sprintf(buffer_Tx,PHASE_CLEAN_JET);
+		else if (timeElapse == 2660) {		//	240-300 sec
+			sprintf(buffer_Tx, PHASE_CLEAN_JET);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
-		}
-	
-		else if(timeElapse == 2540 )  //  420 sec
-		{
-			sprintf(buffer_Tx,PHASE_WASH_OUT);
-			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 2120)  // 25 sec
-		{
-			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);	
+		else if (timeElapse == 2540) {		//  420 sec
+			sprintf(buffer_Tx, PHASE_WASH_OUT);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 2095 ) //	240-300 sec	//REPETIR HASTA AQUI
-		{
-			sprintf(buffer_Tx,PHASE_CLEAN_CARE);
+		else if (timeElapse == 2120) {		// 25 sec
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
-		}
-		else if(timeElapse == 1905 || timeElapse == 1430)	//	25 sec	
-		{
-			sprintf(buffer_Tx,PHASE_FILL_COLD_CAMERA);
-			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
-		}
-		
-		else if(timeElapse == 1880 || timeElapse == 1405) //	900 sec
-		{
-			sprintf(buffer_Tx,PHASE_RECYCLE_WATER);
-			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse ==  1000)  //  420 sec
-		{
-			sprintf(buffer_Tx,PHASE_WASH_OUT);
+		else if (timeElapse == 2095) {	 	// 240-300 sec	
+
+			sprintf(buffer_Tx, PHASE_CLEAN_CARE);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 600)  // 25 sec
-		{
-			sprintf(buffer_Tx,PHASE_DRAIN_WASTE);	
+		else if (timeElapse == 1905 || timeElapse == 1430) { //25 sec	
+			sprintf(buffer_Tx, PHASE_FILL_COLD_CAMERA);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 575 )	//	180 sec
-		{
-			sprintf(buffer_Tx,PHASE_DRYING_CAMERA); //sprintf(buffer_Tx,PHASE_PREHEAT_BOILER);
+		else if (timeElapse == 1880 || timeElapse == 1405) { //900 sec // REPETIR HASTA AQUI
+			sprintf(buffer_Tx, PHASE_RECYCLE_WATER);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 395)  // 300 sec
-		{
-			sprintf(buffer_Tx,PHASE_DRYING_CAMERA);
+		else if (timeElapse == 1000) {  		//  420 sec
+			sprintf(buffer_Tx, PHASE_WASH_OUT);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
 
-		else if(timeElapse == 245)
-		{
-			sprintf(buffer_Tx,PHASE_COOLING_CAMERA);
+		else if (timeElapse == 600) {  		// 25 sec
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
 			UART_Print(buffer_Tx);
-			printf("%s\n",buffer_Tx);
+			printf("%s\n", buffer_Tx);
 		}
+
+		else if (timeElapse == 575) {		//	180 sec
+			sprintf(buffer_Tx, PHASE_DRYING_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 395) {  		// 300 sec
+			sprintf(buffer_Tx, PHASE_DRYING_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 245) {
+			sprintf(buffer_Tx, PHASE_COOLING_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+		break;
+
+	case 5:
+		break;
+
+	case 6:
+		break;
+
+	case 7:
+		break;
+
+	default:
+		break;
 	}
 }
-/* working fine with COM feedback
-
-
-*/
