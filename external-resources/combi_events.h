@@ -31,6 +31,12 @@ typedef struct {
 	uint8_t 		usertemp;
 } update_temp_probe_event_t;
 
+#define UPDATE_TEMP_DELTA_EVENT "update_tempdelta"
+#define UPDATE_TEMP_DELTA_FMT "2u1 userdelta"
+typedef struct {
+	uint16_t 		userdelta;
+} update_temp_delta_event_t;
+
 #define UPDATE_WASH_CYCLE_EVENT "update_washcycle"
 #define UPDATE_WASH_CYCLE_FMT "1u1 usercycle"
 typedef struct {
@@ -100,6 +106,7 @@ typedef struct {
 	uint16_t 		current_cam_temperature;
 	uint16_t		current_probe_temperature;
 	uint16_t		current_humidity;
+	uint16_t		delta_temperature;
 	uint8_t			encoder_parameter;	
 	uint8_t			encoder_activated;
 	uint8_t 		door_status;
@@ -143,7 +150,6 @@ typedef struct {
 #define ENCODER_DECREASE		"#encodr-"
 #define ENCODER_ZERO_POSITION   "#encodr0"
 #define ENCODER_ENABLE			"#enabenc"
-#define ENCODER_DISABLE			"#disaenc"
 #define PAUSE_STOP_PROCESS		"#paustop"
 #define RUNNING_PROCESS			"#running"
 #define FINISHED_PROCESS		"#finishd"
@@ -166,3 +172,4 @@ typedef struct {
 #define MAX_TARGET_PERCENT 		100
 #define MAX_TARGET_TEMPERATURE  300
 #define MAX_TARGET_TIME			5999
+#define ENCODER_DISABLE			20
