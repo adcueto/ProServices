@@ -225,6 +225,14 @@ void *receive_uart_thread(void *arg) {
 					combioven_state.current_probe = relayboard_state.current_probe_temperature;
 					dataChanged = 1;
 				}
+				else if(combioven_state.toggle_state == 9)
+				{
+					sprintf(buffer_Tx,RUNNING_PROCESS);
+			    	UART_Print(buffer_Tx);
+					printf("%s\n",buffer_Tx);
+					combioven_state.toggle_state=previousState;
+					dataChanged=1;
+				}
 				Clear_Buffer(buffer_Rx);
 			}
 
@@ -258,7 +266,8 @@ void *receive_uart_thread(void *arg) {
             			cpyValue[i-5] = buffer_Rx[i];
         		}
         		relayboard_state.current_cam_temperature = atoi(cpyValue);
-			    Clear_Buffer(buffer_Rx);
+				Clear_Buffer(buffer_Rx);
+				dataChanged = 1;
 			}
 
 			else if ( strstr((char *)buffer_Rx, WARNING_MESSAGE	) != NULL ) {
@@ -282,13 +291,20 @@ void *receive_uart_thread(void *arg) {
 						case 0:		combioven_state.toggle_state=previousState;//Reset warning
 									relayboard_state.warning_code=0;
 									break;
+												
+
+
 						case 231:	previousState = combioven_state.toggle_state;
-									combioven_state.toggle_state = 8;//Water supply error
+									combioven_state.toggle_state = 8;
 									relayboard_state.warning_code = warningCode;
-									break;
-						case 111:	combioven_state.toggle_state = 9;
+									break;//Water supply error
+						
+						case 131:	previousState = combioven_state.toggle_state;
+									combioven_state.toggle_state = 8;
 									relayboard_state.warning_code = warningCode;
-									break;//Multipoint Thermocouple opened
+									break;//Boiler level sensor failure
+
+						case 111:   previousState = 9;break;//Multipoint Thermocouple opened
 						case 114:	combioven_state.toggle_state = 9;break;//Cold-Camera Thermocouple opened
 						case 115:	combioven_state.toggle_state = 9;break;//Boiler Thermocouple opened
 						case 116:	break;//Main-Camera Thermocouple opened
@@ -653,7 +669,7 @@ void *receive_front_thread(void *arg) {
 		else if (strcmp(event_name, UPDATE_TEMP_DELTA_EVENT) == 0) {
 			update_temp_delta_event_t* uidata = (update_temp_delta_event_t*)event_data;
 			relayboard_state.delta_temperature = uidata->userdelta;
-			sprintf(buffer_Tx, "Tdelta:%3d", (uint16_t)relayboard_state.delta_temperature);
+			sprintf(buffer_Tx, "Tdelta:%3d",(uint16_t)relayboard_state.delta_temperature);
 			printf("%s\n", buffer_Tx);
 			dataChanged = 1;
 		}
@@ -667,6 +683,15 @@ void *receive_front_thread(void *arg) {
 			printf("%s\n",buffer_Tx);
 			relayboard_state.completed_step=0;
 			combioven_state.toggle_state = 0;
+		}
+
+		else if (strcmp(event_name, TOGGLE_RELAY_SERVICE_EVENT) == 0) {
+			toggle_relay_service_event_t* uidata = (toggle_relay_service_event_t*)event_data;
+			relayboard_state.toggle_relay = uidata->relay;
+			sprintf(buffer_Tx, "#serv%3d",(uint8_t)relayboard_state.toggle_relay);
+			UART_Print(buffer_Tx); 
+			printf("%s\n", buffer_Tx);
+			dataChanged = 1;
 		}
 
 		else if (strcmp(event_name, MODE_CONVECTION_EVENT) == 0) {
@@ -720,19 +745,19 @@ void *receive_front_thread(void *arg) {
 			    UART_Print(buffer_Tx);
 				printf("%s\n",buffer_Tx);
 				sleep_ms(5);
-				combioven_state.toggle_cooling	= 0;
-				combioven_state.toggle_preheat	= 0;
-				if(relayboard_state.door_status==1){
+				combioven_state.toggle_cooling		= 0;
+				combioven_state.toggle_preheat		= 0;
+				if(relayboard_state.door_status	==	1	){
 					sprintf(buffer_Tx,RUNNING_PROCESS);
 			    	UART_Print(buffer_Tx);
 					printf("%s\n",buffer_Tx);
-					combioven_state.toggle_state  = 2;
+					combioven_state.toggle_state  		= 2;
 					combioven_state.current_temperature = 0;
 					sleep_ms(2);
 				}
 				else{
 					combioven_state.toggle_state	= 6;	//Set UI message Close Door
-					previousState=2;						//When Door is close will run
+					previousState					= 2;	//When Door is close will run
 				}
 			} 
 			else {
@@ -860,11 +885,11 @@ void *receive_front_thread(void *arg) {
 				sprintf(buffer_Tx,PAUSE_STOP_PROCESS);
 				UART_Print(buffer_Tx);
 				printf("%s\n", buffer_Tx);
-				combioven_state.toggle_cooling	= 0;
-				combioven_state.toggle_looptime = 0;
-				combioven_state.toggle_probe	= 0;
-				combioven_state.toggle_preheat	= 0;
-				combioven_state.toggle_state	= 0;
+				combioven_state.toggle_cooling		= 0;
+				combioven_state.toggle_looptime 	= 0;
+				combioven_state.toggle_probe		= 0;
+				combioven_state.toggle_preheat		= 0;
+				combioven_state.toggle_state		= 0;
 			}
 			sleep_ms(5);
 			printf("Change data to: %d\n",(uint8_t)combioven_state.toggle_state);
@@ -898,8 +923,8 @@ void *receive_front_thread(void *arg) {
 			} 
 
 			else {
-				combioven_state.toggle_preheat = 0;
-				combioven_state.toggle_state   = 0;
+				combioven_state.toggle_preheat 		= 0;
+				combioven_state.toggle_state   		= 0;
 				sprintf(buffer_Tx,PAUSE_STOP_PROCESS);
 			    UART_Print(buffer_Tx);
 				printf("%s\n",buffer_Tx);
@@ -927,8 +952,8 @@ void *receive_front_thread(void *arg) {
 				UART_Print(buffer_Tx);
 				printf("%s\n", buffer_Tx);
 				sleep_ms(5);
-				combioven_state.toggle_cooling  = 1;
-				combioven_state.toggle_state    = 1;
+				combioven_state.toggle_cooling  	= 1;
+				combioven_state.toggle_state    	= 1;
 				combioven_state.current_temperature = 300;	
 				sprintf(buffer_Tx,MODE_COOLING);
 			    UART_Print(buffer_Tx);
@@ -936,8 +961,8 @@ void *receive_front_thread(void *arg) {
 			} 
 			
 			else {
-				combioven_state.toggle_cooling 	= 0;
-				combioven_state.toggle_state    = 0;
+				combioven_state.toggle_cooling 		= 0;
+				combioven_state.toggle_state    	= 0;
 				sprintf(buffer_Tx,PAUSE_STOP_PROCESS);
 			    UART_Print(buffer_Tx);
 				printf("%s\n",buffer_Tx);
@@ -964,8 +989,8 @@ void *receive_front_thread(void *arg) {
 					sprintf(buffer_Tx,RUNNING_PROCESS);
 			    	UART_Print(buffer_Tx);
 					printf("%s\n",buffer_Tx);
-					combioven_state.toggle_probe  = 1;
-					combioven_state.toggle_state  = 1;
+					combioven_state.toggle_probe  	= 1;
+					combioven_state.toggle_state  	= 1;
 					sleep_ms(2);
 				}
 				else{
@@ -975,8 +1000,8 @@ void *receive_front_thread(void *arg) {
 				}
 			}
 			else {
-				combioven_state.toggle_probe = 0;
-				combioven_state.toggle_state = 0;
+				combioven_state.toggle_probe 		= 0;
+				combioven_state.toggle_state 		= 0;
 				sprintf(buffer_Tx,PAUSE_STOP_PROCESS);
 				UART_Print(buffer_Tx);
 				printf("%s\n",buffer_Tx);
@@ -992,17 +1017,17 @@ void *receive_front_thread(void *arg) {
 				sprintf(buffer_Tx,PAUSE_STOP_PROCESS);
 			    UART_Print(buffer_Tx);
 				printf("%s\n",buffer_Tx);
-				combioven_state.toggle_cooling 	= 0;
-				combioven_state.toggle_preheat  = 0;
+				combioven_state.toggle_cooling 		= 0;
+				combioven_state.toggle_preheat  	= 0;
 				sleep_ms(5);
-				combioven_state.toggle_looptime = 1;
-				combioven_state.toggle_state    = 1;
+				combioven_state.toggle_looptime 	= 1;
+				combioven_state.toggle_state    	= 1;
 				sprintf(buffer_Tx,RUNNING_PROCESS);
 			    UART_Print(buffer_Tx);
 				printf("%s\n",buffer_Tx);
 			} else {
-				combioven_state.toggle_looptime = 0;
-				combioven_state.toggle_state 	= 0;
+				combioven_state.toggle_looptime 	= 0;
+				combioven_state.toggle_state 		= 0;
 				sprintf(buffer_Tx,PAUSE_STOP_PROCESS);
 			    UART_Print(buffer_Tx);
 				printf("%s\n",buffer_Tx);
@@ -1138,6 +1163,7 @@ int main(int argc, char **argv) {
 	relayboard_state.completed_step				= 0;
 	relayboard_state.last_step					= 0;
 	relayboard_state.warning_code				= 0;
+	relayboard_state.toggle_relay				= 0;
 	relayboard_state.delta_temperature			= 0;	
 	combioven_state.target_temperature			= 30;
 	combioven_state.target_steam    			= 0;
@@ -1190,7 +1216,7 @@ int main(int argc, char **argv) {
 /*
 	toggle_state :  
 	0 = stop
-	1 = running free time / preheat / cooling / looptime / external probe
+	1 = running free time / preheat / cooling / looptime / external probe / delta
 	2 = running manual mode with time 
 	3 = running automatic by steps Ok
 	4 = running washing Ok
@@ -1212,9 +1238,11 @@ int main(int argc, char **argv) {
 			sprintf(buffer_Tx,PAUSE_STOP_PROCESS);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
-			recipe_active.actualstep		= 0;
-			combioven_state.toggle_preheat 	= 0;
-			combioven_state.toggle_cooling	= 0;
+			recipe_active.actualstep			= 0;
+			combioven_state.toggle_preheat 		= 0;
+			combioven_state.toggle_cooling		= 0;
+			combioven_state.toggle_probe		= 0;
+			combioven_state.toggle_looptime		= 0;
 			timer = time(NULL);
 		}
 
@@ -1278,13 +1306,13 @@ int main(int argc, char **argv) {
 		//running automatic by steps Ok
 		else if ((seconds > 0.5) && (runningState == 3) && (relayboard_state.door_status==1))
 		{
-			//TYPE_STEP: 0:User_Action / 1:Preheat / 2:Timer / 3:
+			//TYPE_STEP: 0:User_Action / 1:Preheat / 2:Timer / 3:TempCore / 4:DeltaCore
 
 			if(recipe_active.typestep == 0)
 			{
 				if( relayboard_state.completed_step == 1 ){
-					combioven_state.toggle_state 	= 5;
-					relayboard_state.completed_step	= 0;
+					combioven_state.toggle_state 		= 5;
+					relayboard_state.completed_step		= 0;
 					runningState = combioven_state.toggle_state;
 					printf("next_step..\n");
 					timer = time(NULL);
@@ -1296,8 +1324,8 @@ int main(int argc, char **argv) {
 			else if(recipe_active.typestep == 1)
 			{
 				if( relayboard_state.completed_step==1 ){
-					combioven_state.toggle_state 	= 5;
-					relayboard_state.completed_step	= 0 ;
+					combioven_state.toggle_state 		= 5;
+					relayboard_state.completed_step		= 0 ;
 					runningState = combioven_state.toggle_state;
 					printf("next_step..\n");
 					timer = time(NULL);
@@ -1323,14 +1351,14 @@ int main(int argc, char **argv) {
 					//sprintf(buffer_Tx,PAUSE_STOP_PROCESS);
 					//UART_Print(buffer_Tx);
 					//printf("%s", buffer_Tx);
-					combioven_state.toggle_state 	= 5;
-					relayboard_state.completed_step	= 0;
+					combioven_state.toggle_state 		= 5;
+					relayboard_state.completed_step		= 0;
 					runningState = combioven_state.toggle_state;
 					sleep_ms(500);
 				}
 
 				else if ( (combioven_state.target_time == 0) && (recipe_active.actualstep == recipe_active.totalsteps)) {
-					combioven_state.toggle_state 	= 7;
+					combioven_state.toggle_state 		= 7;
 					runningState = combioven_state.toggle_state;
 					sprintf(buffer_Tx,FINISHED_PROCESS);
 					UART_Print(buffer_Tx);
@@ -1341,7 +1369,7 @@ int main(int argc, char **argv) {
 				dataChanged = 1;
 			}
 
-			else if((recipe_active.typestep == 3) && (relayboard_state.delta_temperature == 0))
+			else if((recipe_active.typestep == 3) && (relayboard_state.delta_temperature == 0))  //cookingMode = TcoreProbe
 			{
 				if ((combioven_state.current_probe >= combioven_state.target_probe) && (combioven_state.current_temperature >= combioven_state.target_temperature)) {
 					if(recipe_active.actualstep == recipe_active.totalsteps) 
@@ -1373,13 +1401,13 @@ int main(int argc, char **argv) {
 			}
 		}
 
-		else if ((recipe_active.typestep == 3) && (relayboard_state.delta_temperature != 0))
+		else if ((recipe_active.typestep == 3) && (relayboard_state.delta_temperature != 0)) //cookingMode = TcoreDelta
 		{
 			int checkDelta = combioven_state.target_temperature - relayboard_state.delta_temperature;
 			if (combioven_state.current_probe > checkDelta) {
 				if ( (combioven_state.current_probe>=combioven_state.target_probe) && (recipe_active.actualstep == recipe_active.totalsteps))
 				{
-					combioven_state.toggle_state = 7;
+					combioven_state.toggle_state 		= 7;
 					runningState = combioven_state.toggle_state;
 					sprintf(buffer_Tx, FINISHED_PROCESS);
 					UART_Print(buffer_Tx);
@@ -1388,19 +1416,20 @@ int main(int argc, char **argv) {
 
 				else if ((combioven_state.current_probe >= combioven_state.target_probe) && (recipe_active.actualstep < recipe_active.totalsteps))
 				{
-					sleep_ms(1000);
-					combioven_state.toggle_state = 5;
-					relayboard_state.completed_step = 0;
+					sleep_ms(500);
+					combioven_state.toggle_state 		= 5;
+					relayboard_state.completed_step 	= 0;
 					runningState = combioven_state.toggle_state;
 					printf("probeOk NEXT\n");
 				}
 				
+				/*
 				else
 				{
 					sleep_ms(100);
 					combioven_state.target_temperature = combioven_state.current_probe + relayboard_state.delta_temperature;
 					printf("#newTemp: %d\n", (uint16_t)combioven_state.target_temperature);	
-				}
+				} */
 				dataChanged = 1;
 			}
 			
@@ -1415,6 +1444,7 @@ int main(int argc, char **argv) {
 				dataChanged = 1;
 				sleep_ms(100);
 			}
+			timer = time(NULL);
 		}	
 		
 		//running washing Ok
@@ -1446,6 +1476,19 @@ int main(int argc, char **argv) {
 			printf("Change data to: %d\n",(uint8_t)combioven_state.toggle_state);
 			dataChanged = 1;
 		}
+
+		//NonProbe connected state
+	/*	else if ((seconds > 5) && (runningState == 9))
+		{
+			sprintf(buffer_Tx,PAUSE_STOP_PROCESS);
+			UART_Print(buffer_Tx);
+			printf("%s\n",buffer_Tx);
+			sleep_ms(100);
+			sprintf(buffer_Tx, GET_EXTERN_PROBE_TEMP);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+			timer = time(NULL);
+		} */
 		unlock_mutex();
 
 	
@@ -1527,7 +1570,7 @@ void Washing_Process(uint8_t modeSelected, uint8_t phaseStatus, uint32_t timeEla
 		}
 
 		else if (timeElapse == 1475) {
-			sprintf(buffer_Tx, PHASE_CLEAN_CARE);
+			sprintf(buffer_Tx, PHASE_DISCALOUT);
 			UART_Print(buffer_Tx);
 			printf("%s\n", buffer_Tx);
 		}
@@ -1600,6 +1643,7 @@ void Washing_Process(uint8_t modeSelected, uint8_t phaseStatus, uint32_t timeEla
 			sprintf(buffer_Tx, PHASE_FILL_COLD_CAMERA);
 			UART_Print(buffer_Tx);
 			printf("%s\n", buffer_Tx);
+			
 		}
 
 		//DISPENSAR DETERGENTE
@@ -1767,12 +1811,321 @@ void Washing_Process(uint8_t modeSelected, uint8_t phaseStatus, uint32_t timeEla
 		break;
 
 	case 5:
+		if (phaseStatus == 0) {				//	25 sec
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+			relayboard_state.washing_phase = 99;  //IDLE status
+		}
+
+		else if (timeElapse == 5675) {		//	120 sec
+			sprintf(buffer_Tx, PHASE_CLEAN_JET);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 5556) {		//	180 sec
+			sprintf(buffer_Tx, PHASE_DRYING_CAMERA); //sprintf(buffer_Tx,PHASE_PREHEAT_BOILER);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 5376 || timeElapse == 3160) {	//	25 sec   //REPETIR DESDE AQUI		
+			sprintf(buffer_Tx, PHASE_FILL_COLD_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 5351 || timeElapse == 3135) {	//  900 sec
+			sprintf(buffer_Tx, PHASE_RECYCLE_WATER);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 4451) {		//	25 sec	
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 4426) {		//	240-300 sec    ***REVIEWED UP HERE
+			sprintf(buffer_Tx, PHASE_CLEAN_JET);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 2540) {		//  420 sec
+			sprintf(buffer_Tx, PHASE_WASH_OUT);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 2120) {		// 25 sec
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 2095) {	 	// 240-300 sec	
+
+			sprintf(buffer_Tx, PHASE_CLEAN_CARE);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 1905 || timeElapse == 1430) { //25 sec	
+			sprintf(buffer_Tx, PHASE_FILL_COLD_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 1880 || timeElapse == 1405) { //900 sec // REPETIR HASTA AQUI
+			sprintf(buffer_Tx, PHASE_RECYCLE_WATER);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 1000) {  		//  420 sec
+			sprintf(buffer_Tx, PHASE_WASH_OUT);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 600) {  		// 25 sec
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 575) {		//	180 sec
+			sprintf(buffer_Tx, PHASE_DRYING_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 395) {  		// 300 sec
+			sprintf(buffer_Tx, PHASE_DRYING_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 245) {
+			sprintf(buffer_Tx, PHASE_COOLING_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
 		break;
 
 	case 6:
+		if (phaseStatus == 0) {				//	25 sec
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+			relayboard_state.washing_phase = 99;  //IDLE status
+		}
+
+		else if (timeElapse == 7175) {		//	120 sec
+			sprintf(buffer_Tx, PHASE_CLEAN_JET);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 6935) {		//	180 sec
+			sprintf(buffer_Tx, PHASE_DRYING_CAMERA); //sprintf(buffer_Tx,PHASE_PREHEAT_BOILER);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 6695 || timeElapse == 3160) {	//	25 sec   //REPETIR DESDE AQUI		
+			sprintf(buffer_Tx, PHASE_FILL_COLD_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 6670 || timeElapse == 3135) {	//  900 sec
+			sprintf(buffer_Tx, PHASE_RECYCLE_WATER);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 4870) {		//	25 sec	
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 4865) {		//	240-300 sec     **REVIEWED UP HERE
+			sprintf(buffer_Tx, PHASE_CLEAN_JET);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 2540) {		//  420 sec
+			sprintf(buffer_Tx, PHASE_WASH_OUT);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 2120) {		// 25 sec
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 2095) {	 	// 240-300 sec	
+
+			sprintf(buffer_Tx, PHASE_CLEAN_CARE);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 1905 || timeElapse == 1430) { //25 sec	
+			sprintf(buffer_Tx, PHASE_FILL_COLD_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 1880 || timeElapse == 1405) { //900 sec // REPETIR HASTA AQUI
+			sprintf(buffer_Tx, PHASE_RECYCLE_WATER);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 1000) {  		//  420 sec
+			sprintf(buffer_Tx, PHASE_WASH_OUT);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 600) {  		// 25 sec
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 575) {		//	180 sec
+			sprintf(buffer_Tx, PHASE_DRYING_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 395) {  		// 300 sec
+			sprintf(buffer_Tx, PHASE_DRYING_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 245) {
+			sprintf(buffer_Tx, PHASE_COOLING_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
 		break;
 
 	case 7:
+		if (phaseStatus == 0) {				//	25 sec
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+			relayboard_state.washing_phase = 99;  //IDLE status
+		}
+
+		else if (timeElapse == 10775) {		//	120 sec
+			sprintf(buffer_Tx, PHASE_CLEAN_JET);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 10415) {		//	180 sec
+			sprintf(buffer_Tx, PHASE_DRYING_CAMERA); //sprintf(buffer_Tx,PHASE_PREHEAT_BOILER);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 9935 || timeElapse == 3160) {	//	25 sec   //REPETIR DESDE AQUI		
+			sprintf(buffer_Tx, PHASE_FILL_COLD_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 9905 || timeElapse == 3135) {	//  900 sec
+			sprintf(buffer_Tx, PHASE_RECYCLE_WATER);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 7205) {		//	25 sec	
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 7175) {		//	240-300 sec		**REVIEWED UP HERE
+			sprintf(buffer_Tx, PHASE_CLEAN_JET);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 2540) {		//  420 sec
+			sprintf(buffer_Tx, PHASE_WASH_OUT);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 2120) {		// 25 sec
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 2095) {	 	// 240-300 sec	
+
+			sprintf(buffer_Tx, PHASE_CLEAN_CARE);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 1905 || timeElapse == 1430) { //25 sec	
+			sprintf(buffer_Tx, PHASE_FILL_COLD_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 1880 || timeElapse == 1405) { //900 sec // REPETIR HASTA AQUI
+			sprintf(buffer_Tx, PHASE_RECYCLE_WATER);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 1000) {  		//  420 sec
+			sprintf(buffer_Tx, PHASE_WASH_OUT);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 600) {  		// 25 sec
+			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 575) {		//	180 sec
+			sprintf(buffer_Tx, PHASE_DRYING_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 395) {  		// 300 sec
+			sprintf(buffer_Tx, PHASE_DRYING_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
+
+		else if (timeElapse == 245) {
+			sprintf(buffer_Tx, PHASE_COOLING_CAMERA);
+			UART_Print(buffer_Tx);
+			printf("%s\n", buffer_Tx);
+		}
 		break;
 
 	default:

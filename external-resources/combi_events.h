@@ -43,6 +43,13 @@ typedef struct {
 	uint8_t 		usercycle;
 } update_wash_cycle_event_t;
 
+#define TOGGLE_RELAY_SERVICE_EVENT "toggle_relay"
+#define TOGGLE_RELAY_SERVICE_FMT "1u1 relay"
+typedef struct {
+	uint8_t 		relay;
+} toggle_relay_service_event_t;
+
+
 /*
 MODE_QUICK_POLISH_EVENT  	"mode_washing1"
 MODE_FULL_POLISH_EVENT   	"mode_washing2"
@@ -115,6 +122,7 @@ typedef struct {
 	uint8_t			completed_step;
 	uint8_t			last_step;
 	uint8_t			warning_code;
+	uint8_t			toggle_relay;
 } relayboard_update_event_t;
 
 
@@ -167,6 +175,7 @@ typedef struct {
 #define	PHASE_CLEAN_JET			"#phas007"
 #define	PHASE_FILL_COLD_CAMERA	"#phas008"
 #define	PHASE_RECYCLE_WATER		"#phas009"
+#define PHASE_DISCALOUT			"#phas010"
 
 //GLobal Variables
 #define MAX_TARGET_PERCENT 		100
