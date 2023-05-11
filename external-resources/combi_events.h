@@ -94,21 +94,10 @@ typedef struct {
 	uint8_t 		toggle_looptime;
 	//uint8_t 		units;
 } combioven_update_event_t;
-/*
-	toggle_state :  
-	0 = stop
-	1 = running free time / preheat / cooling / looptime
-	2 = running manual mode with time Ok
-	3 = running automatic by steps Ok
-	4 = running washing Ok
-	5 = ready for next step
-	6 = pause / cerrar puerta
-	7 = finished state
-	8 = conectar agua
-	9 = warning state
-*/
+
 
 //MAIN RELAY BOARD CONTROL AND STATUS STRUCTURE
+/// @brief structure to save incoming data from Power PCB
 typedef struct {
 	uint16_t 		current_cam_temperature;
 	uint16_t		current_probe_temperature;
@@ -133,6 +122,7 @@ typedef struct {
 #define MODE_LOAD_EVENT   		"mode_load"
 #define TOGGLE_MANUAL_EVENT 	"toggle_manual"
 #define TOGGLE_AUTOMATIC_EVENT 	"toggle_automatic"
+#define TOGGLE_MULTILEVEL_EVENT	"toggle_multilevel"
 #define TOGGLE_WASHING_EVENT	"toggle_washing"
 #define TOGGLE_FINISHED_EVENT	"toggle_finished"
 #define TOGGLE_PREHEAT_EVENT 	"toggle_preheat"
@@ -158,6 +148,7 @@ typedef struct {
 #define ENCODER_DECREASE		"#encodr-"
 #define ENCODER_ZERO_POSITION   "#encodr0"
 #define ENCODER_ENABLE			"#enabenc"
+#define ENCODER_OFF				"#disaenc"
 #define PAUSE_STOP_PROCESS		"#paustop"
 #define RUNNING_PROCESS			"#running"
 #define FINISHED_PROCESS		"#finishd"
@@ -171,14 +162,45 @@ typedef struct {
 #define	PHASE_COOLING_CAMERA	"#phas003"
 #define	PHASE_DRYING_CAMERA		"#phas004"
 #define	PHASE_PREHEAT_BOILER	"#phas005"
-#define	PHASE_CLEAN_CARE		"#phas006"
+#define	PHASE_SUPPLY_SOAP		"#phas006"
 #define	PHASE_CLEAN_JET			"#phas007"
 #define	PHASE_FILL_COLD_CAMERA	"#phas008"
 #define	PHASE_RECYCLE_WATER		"#phas009"
-#define PHASE_DISCALOUT			"#phas010"
+#define PHASE_SUPPLY_DISCALER	"#phas010"
 
 //GLobal Variables
 #define MAX_TARGET_PERCENT 		100
 #define MAX_TARGET_TEMPERATURE  300
-#define MAX_TARGET_TIME			5999
+#define MAX_TARGET_TIME			10800//5999
 #define ENCODER_DISABLE			20
+
+//TOGGLE STATES OVEN
+#define STOP_OVEN_STATE			0
+#define RUN_SUB_STATE			1
+#define RUN_MANUAL_STATE		2
+#define RUN_AUTO_STATE			3
+#define RUN_MULTILEVEL_STATE	4
+#define RUN_WASHING_STATE		5
+#define RDY_NEXTSTEP_STATE		6
+#define PAUSE_BY_DOOR_STATE		7
+#define FINISHED_STATE			8
+#define CONNECT_WATER_STATE		9
+#define WARNING_STATE			10
+/*
+	toggle_state :  
+	0 = stop
+	1 = running free time / preheat / cooling / looptime
+	2 = running manual mode with time Ok
+	3 = running automatic by steps Ok
+	4 = running washing Ok
+	5 = ready for next step
+	6 = pause / cerrar puerta
+	7 = finished state
+	8 = conectar agua
+	9 = warning state
+*/
+
+
+
+
+

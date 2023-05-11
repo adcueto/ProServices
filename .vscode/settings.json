@@ -20,5 +20,6 @@
         "wordsize.h": "c",
         "greio.h": "c",
         "combi_events.h": "c"
-    }
+    },
+    "cmake.configureOnOpen": false
 }
