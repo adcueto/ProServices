@@ -545,14 +545,15 @@ void *receive_uart_thread(void *arg) {
 					{
 					
 					case 3:		sprintf(buffer_Tx,"timer:%d",(uint32_t)combioven_state.target_time);
+								printf("%s\n",buffer_Tx);
 								break;
 					
 					case 5:		sprintf(buffer_Tx,"#tprb%3d",(uint16_t)combioven_state.target_probe);
+								printf("%s\n",buffer_Tx);
 								break;
 					
 					default:	break;
 					}
-					printf("%s\n",buffer_Tx);
 					sleep_ms(10);
 					dataChanged = 1;
 					//posiblemente falte avisar cambio a UI
@@ -1095,6 +1096,7 @@ void *receive_front_thread(void *arg) {
 			dataChanged = 1;
 		}
 
+
 		else if (strcmp(event_name, TOGGLE_COOLING_EVENT) == 0) {
 			if (combioven_state.toggle_cooling == 0) {
 				sprintf(buffer_Tx,PAUSE_STOP_PROCESS);
@@ -1111,6 +1113,15 @@ void *receive_front_thread(void *arg) {
 				combioven_state.toggle_cooling  	= 1;
 				combioven_state.toggle_state    	= RUN_SUB_STATE;
 				combioven_state.current_temperature = 300;
+				if(relayboard_state.encoder_activated < ENCODER_DISABLE)
+				{
+					relayboard_state.encoder_activated = ENCODER_DISABLE;
+					sprintf(buffer_Tx,ENCODER_OFF);
+			    	UART_Print(buffer_Tx);
+					sleep_ms(20);
+					printf("%s\n",buffer_Tx);
+					Update_Parameters(&combioven_state);				
+				}
 				sprintf(buffer_Tx,MODE_COOLING);
 			    UART_Print(buffer_Tx);
 				printf("%s\n",buffer_Tx);
@@ -1409,6 +1420,7 @@ int main(int argc, char **argv) {
 			{
 				combioven_state.current_temperature = relayboard_state.current_cam_temperature;
 				printf("cool:%3d\n",(uint16_t)combioven_state.current_temperature);
+				printf("targ:%3d\n",(uint16_t)combioven_state.target_temperature);
 				dataChanged = 1;
 				timer = time(NULL);
 			}
@@ -1690,6 +1702,8 @@ int main(int argc, char **argv) {
 		//running washing Ok
 		else if( (seconds > 0.5) && (runningState == RUN_WASHING_STATE) && (relayboard_state.door_status==1) && (combioven_state.toggle_cooling == 0))
 		{
+			//printf("state:%d run:%d subpr:%d wcycle:%d\n",(uint8_t)combioven_state.toggle_state, (uint8_t)runningState, (uint8_t)relayboard_state.washing_phase, (uint8_t)relayboard_state.washing_mode);
+				
 			if (combioven_state.target_time > 0) 
 			{
 				combioven_state.target_time -= 1;
@@ -1781,8 +1795,7 @@ void Update_Parameters(combioven_update_event_t *combiOven)
 	sleep_ms(500);
 	sprintf(buffer_Tx,"#sped%3d",(uint8_t)combioven_state.target_fanspeed);
 	UART_Print(buffer_Tx);
-	printf("%s",buffer_Tx);	
-	
+	printf("%s",buffer_Tx);
 }
 
 /****************************************************************************************************************************
@@ -1845,7 +1858,7 @@ void Washing_Process(relayboard_update_event_t *relayboard, uint8_t modeSelected
 			printf("%s\n", buffer_Tx);
 		}
 
-		else if (timeElapse == 845) {					//520 sec
+		else if (timeElapse == 900) {					//520 sec
 			sprintf(buffer_Tx, PHASE_WASH_OUT);
 			UART_Print(buffer_Tx);
 			printf("%s\n", buffer_Tx);
@@ -1865,7 +1878,7 @@ void Washing_Process(relayboard_update_event_t *relayboard, uint8_t modeSelected
 		break;
 
 
-	case 3:		//// *****	L	A	V	A	D	O 			I	N	T	E	R	M	E	D	I	O   2460 SEC ******* ///
+	case 3:	//// *****	L	A	V	A	D	O		 E	C	O	3600 SEC ******* ///
 		if (phaseStatus == 0) {							//28 sec
 			sleep_ms(1000);
 			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
@@ -1910,17 +1923,17 @@ void Washing_Process(relayboard_update_event_t *relayboard, uint8_t modeSelected
 			printf("%s\n", buffer_Tx);
 		}
 //		*********************** FIN DE REPETIR CICLO ***************
-		else if (timeElapse == 813 || timeElapse == 581) {  //27 sec
+		else if (timeElapse == 754 || timeElapse == 581) {  //27 sec
 			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
 			UART_Print(buffer_Tx);
 			printf("%s\n", buffer_Tx);
 		}
 
-		else if (timeElapse == 786 ) {						//60 sec	//DISPENSAR DESCALCIFICANTE:
+/*		else if (timeElapse == 786 ) {						//60 sec	//DISPENSAR DESCALCIFICANTE:
 			sprintf(buffer_Tx, PHASE_SUPPLY_DISCALER);
 			UART_Print(buffer_Tx);
 			printf("%s\n", buffer_Tx);	
-		}
+		} */
 
 //		*********************** CICLOS DE ENJUAGUE  ***************
 		else if (timeElapse == 726 || timeElapse == 554 || timeElapse == 382 || timeElapse == 210) {  //145 sec 
@@ -1950,7 +1963,7 @@ void Washing_Process(relayboard_update_event_t *relayboard, uint8_t modeSelected
 
 
 
-	case 4:			//// *****	L	A	V	A	D	O		 E	C	O	3600 SEC ******* ///
+	case 4:	   //// *****	L	A	V	A	D	O 			I	N	T	E	R	M	E	D	I	O   2460 SEC ******* ///
 		if (phaseStatus == 0) {							//28 sec
 			sleep_ms(1000);
 			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
@@ -2124,19 +2137,19 @@ void Washing_Process(relayboard_update_event_t *relayboard, uint8_t modeSelected
 			printf("%s\n", buffer_Tx);
 		}
 
-		else if (timeElapse == 2024 || timeElapse == 953) {						//540 sec	
+		else if (timeElapse == 2024 || timeElapse == 926 ) {	//540 sec	
 			sprintf(buffer_Tx, PHASE_WASH_OUT);
 			UART_Print(buffer_Tx);
 			printf("%s\n", buffer_Tx);
 		}
 
-		else if (timeElapse == 413 || timeElapse == 236 ) {		//	120 sec
+		else if (timeElapse == 386 || timeElapse == 239 || timeElapse == 92) {		//	120 sec
 			sprintf(buffer_Tx, PHASE_CLEAN_JET);
 			UART_Print(buffer_Tx);
 			printf("%s\n", buffer_Tx);
 		}
 
-		else if (timeElapse == 413 || timeElapse == 263 || timeElapse == 86) {  //27 sec
+		else if (timeElapse == 266 || timeElapse == 119 || timeElapse == 29) {  //27 sec
 			sprintf(buffer_Tx, PHASE_DRAIN_WASTE);
 			UART_Print(buffer_Tx);
 			printf("%s\n", buffer_Tx);
