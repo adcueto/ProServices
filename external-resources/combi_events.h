@@ -99,6 +99,7 @@ typedef struct {
 //MAIN RELAY BOARD CONTROL AND STATUS STRUCTURE
 /// @brief structure to save incoming data from Power PCB
 typedef struct {
+	uint32_t		hitemp_timeout;
 	uint16_t 		current_cam_temperature;
 	uint16_t		current_probe_temperature;
 	uint16_t		current_humidity;
