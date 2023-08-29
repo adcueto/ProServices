@@ -49,6 +49,12 @@ typedef struct {
 	uint8_t 		relay;
 } toggle_relay_service_event_t;
 
+#define SET_WARNING_STATE_EVENT "set_warning"
+#define SET_WARNING_STATE_FMT "1u1 warningcode"
+typedef struct {
+	uint8_t 		warningcode;
+} set_warning_state_event_t;
+
 
 /*
 MODE_QUICK_POLISH_EVENT  	"mode_washing1"
@@ -66,6 +72,17 @@ typedef struct {
 	uint8_t 		parameter;
 } enable_encoder_event_t;
 
+//ENABLE ENCODER FOR RECIPE CREATION
+#define ENABLE_ENCODER_OPT_EVENT "enable_encoder_options"
+#define ENABLE_ENCODER_OPT_FMT "4u1 minvalue 4u1 maxvalue 4u1 nowvalue 1u1 stepvalue 1u1 parameter"
+typedef struct {
+	uint32_t 		minvalue;
+	uint32_t		maxvalue;
+	uint32_t		nowvalue;
+	uint8_t			stepvalue;
+	uint8_t			parameter;
+} enable_encoder_opt_event_t;//ENABLE ENCODER FOR RECIPE CREATION
+
 //MAIN DATA RECIPE FOR AUTOMATIC MODE
 #define RECIPE_INFO_EVENT "update_recipeinfo"
 #define RECIPE_INFO_FMT "1u1 totalsteps 1u1 actualstep 1u1 typestep"
@@ -77,9 +94,10 @@ typedef struct {
 
 //MAIN OVEN PARAMETERS AND STATUS STRUCTURE 
 #define COMBIOVEN_UPDATE_EVENT "combioven_update"
-#define COMBIOVEN_UPDATE_FMT "4u1 target_time 2u1 target_temperature 2u1 current_probe 2u1 current_humidity 2u1 current_temperature 1u1 target_steam 1u1 target_fanspeed 1u1 target_probe 1u1 toggle_preheat 1u1 toggle_cooling 1u1 toggle_state 1u1 toggle_probe 1u1 toggle_looptime"
+#define COMBIOVEN_UPDATE_FMT "4u1 target_time 4u1 encoder_data 2u1 target_temperature 2u1 current_probe 2u1 current_humidity 2u1 current_temperature 1u1 target_steam 1u1 target_fanspeed 1u1 target_probe 1u1 toggle_preheat 1u1 toggle_cooling 1u1 toggle_state 1u1 toggle_probe 1u1 toggle_looptime 1u1 encoder_parameter"
 typedef struct {
 	uint32_t		target_time;
+	uint32_t		encoder_data;
 	uint16_t 		target_temperature;
 	uint16_t		current_probe;
 	uint16_t		current_humidity;
@@ -92,7 +110,7 @@ typedef struct {
 	uint8_t			toggle_state;
 	uint8_t			toggle_probe;
 	uint8_t 		toggle_looptime;
-	//uint8_t 		units;
+	uint8_t 		encoder_parameter;
 } combioven_update_event_t;
 
 
@@ -133,7 +151,7 @@ typedef struct {
 #define TOGGLE_SPRAY_EVENT   	"toggle_spray"
 
 
-//EVENTS IN/OUT COMING FROM UART RELAYBOARD 8 BYTES
+//EVENTS IN/OUT COMING FROM UART RELAYBOARD 1 BYTE
 #define MODE_CONVECTION         "#convect"
 #define MODE_COMBINED			"#combine"
 #define MODE_STEAM				"#steamhi"
@@ -157,7 +175,7 @@ typedef struct {
 #define DOOR_OPEN				"#dooropn"
 #define DOOR_CLOSED				"#doorcls"
 
-//WASH MANAGEMENT ROUTINES TO RELAYBOARD 8 BYTES
+//WASH MANAGEMENT ROUTINES TO RELAYBOARD 1 BYTE
 #define	PHASE_DRAIN_WASTE		"#phas001"
 #define	PHASE_WASH_OUT			"#phas002"
 #define	PHASE_COOLING_CAMERA	"#phas003"
@@ -187,6 +205,8 @@ typedef struct {
 #define FINISHED_STATE			8
 #define CONNECT_WATER_STATE		9
 #define WARNING_STATE			10
+#define DIRTY_FILTER_STATE		11
+#define OVERHEAT_STATE			12
 /*
 	toggle_state :  
 	0 = stop
