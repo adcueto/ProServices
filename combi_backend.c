@@ -322,10 +322,26 @@ void *receive_uart_thread(void *arg) {
 									relayboard_state.warning_code = warningCode;
 									break;//Boiler level sensor failure
 
-						case 111:   previousState = WARNING_STATE;break;//Multipoint Thermocouple opened
-						case 114:	combioven_state.toggle_state = WARNING_STATE;break;//Cold-Camera Thermocouple opened
-						case 115:	combioven_state.toggle_state = WARNING_STATE;break;//Boiler Thermocouple opened
-						case 116:	break;//Main-Camera Thermocouple opened
+						case 111:   previousState = combioven_state.toggle_state;
+									combioven_state.toggle_state = WARNING_STATE;
+									relayboard_state.warning_code = warningCode;
+									break;//Multipoint Thermocouple opened
+
+						case 114:	previousState = combioven_state.toggle_state;
+									combioven_state.toggle_state = WARNING_STATE;
+									relayboard_state.warning_code = warningCode;
+									break;//Cold-Camera Thermocouple opened
+
+						case 115:	previousState = combioven_state.toggle_state;
+									combioven_state.toggle_state = WARNING_STATE;
+									relayboard_state.warning_code = warningCode;
+									break;//Boiler Thermocouple opened
+
+						case 116:	previousState = combioven_state.toggle_state;
+									combioven_state.toggle_state = WARNING_STATE;
+									relayboard_state.warning_code = warningCode;
+									break;//Main-Camera Thermocouple opened
+									
 						case 510:   break;//Relayboard program failure
 						case 511:	break;//Communication failure
 						default: 	break;
@@ -553,7 +569,7 @@ void *receive_uart_thread(void *arg) {
 					dataChanged = 1;
 				}
 
-				else if (relayboard_state.encoder_parameter == 6) {							//Steam recipe-parameter
+				else if (relayboard_state.encoder_parameter == 6) {							//Editor recipe-parameter
 					if(encoder_options.nowvalue  <= encoder_options.minvalue )
 					   encoder_options.nowvalue  = encoder_options.minvalue;
 					else 
@@ -591,7 +607,8 @@ void *receive_uart_thread(void *arg) {
 					default:	break;
 					}
 					sleep_ms(10);
-
+					relayboard_state.encoder_parameter = 0;
+					combioven_state.encoder_parameter = relayboard_state.encoder_parameter;
 					dataChanged = 1;
 				}
 
@@ -1498,7 +1515,7 @@ int main(int argc, char **argv) {
 
 
 		else if ( (seconds > 1) && (runningState == RUN_SUB_STATE) ) //
-		{
+		{ 
 			if ( (combioven_state.toggle_preheat == 1) && (relayboard_state.door_status==1) && (relayboard_state.current_cam_temperature != combioven_state.current_temperature))
 			{
 				combioven_state.current_temperature = relayboard_state.current_cam_temperature;
