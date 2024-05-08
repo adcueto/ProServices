@@ -1559,6 +1559,7 @@ int main(int argc, char **argv) {
 				if((combioven_state.current_probe>=combioven_state.target_probe) && (combioven_state.current_temperature>combioven_state.target_temperature)){
 					combioven_state.toggle_state = FINISHED_STATE;
 					combioven_state.toggle_probe = 0;
+					relayboard_state.current_cam_temperature = 0; //se agrega para reiniciar la prueba
 					runningState = combioven_state.toggle_state;
 					sprintf(buffer_Tx,FINISHED_PROCESS);
 			    	UART_Print(buffer_Tx);
