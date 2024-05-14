@@ -134,6 +134,18 @@ typedef struct {
 } relayboard_update_event_t;
 
 
+typedef enum{
+	COMBI_MODE_STOP,
+	COMBI_MODE_CONVECTION,
+	COMBI_MODE_COMBINED,
+	COMBI_MODE_STEAM,
+	COMBI_MODE_PREHEAT,
+	COMBI_MODE_LOAD,
+	COMBI_MODE_COOLING,
+	COMBI_MODE_WASHING,
+}combi_mode_t;
+
+
 //EVENTS INCOMING FRONT-END CRANK SOFTWARE
 #define MODE_CONVECTION_EVENT   "mode_convection"
 #define MODE_COMBINED_EVENT   	"mode_combined"
@@ -150,6 +162,10 @@ typedef struct {
 #define TOGGLE_PROBE_EVENT   	"toggle_probe"
 #define TOGGLE_SPRAY_EVENT   	"toggle_spray"
 
+//EVENTS INCOMING FRONT-END CRANK SOFTWARE
+#define MODE_RECIPE_CONVECTION_EVENT   	"mode_recipe_convection"
+#define MODE_RECIPE_COMBINED_EVENT   	"mode_recipe_combined"
+#define MODE_RECIPE_STEAM_EVENT   		"mode_recipe_steam"
 
 //EVENTS IN/OUT COMING FROM UART RELAYBOARD 1 BYTE
 #define MODE_CONVECTION         "#convect"
@@ -190,6 +206,7 @@ typedef struct {
 //GLobal Variables
 #define MAX_TARGET_PERCENT 		100
 #define MAX_TARGET_TEMPERATURE  300
+#define MAX_TARGET_TEMP_STEAM   138
 #define MAX_TARGET_TIME			10800//5999
 #define ENCODER_DISABLE			20
 

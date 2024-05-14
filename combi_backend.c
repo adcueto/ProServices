@@ -46,6 +46,7 @@ static combioven_update_event_t	    combioven_state;	//Structure for UI-Backend 
 static relayboard_update_event_t	relayboard_state;	//Structure for Backend - PowerPCB communication
 static recipe_info_event_t			recipe_active;		//Structure for recipe data update
 static enable_encoder_opt_event_t	encoder_options;	//Structure for encoder options enabled
+static combi_mode_t 				mode_operation;
 //static
 
 #ifdef WIN32
@@ -471,11 +472,21 @@ void *receive_uart_thread(void *arg) {
 				}
 
 				else if (relayboard_state.encoder_parameter == 2) {
-					if(combioven_state.target_temperature >= MAX_TARGET_TEMPERATURE)
-					   combioven_state.target_temperature = MAX_TARGET_TEMPERATURE;
-					else 
-					   combioven_state.target_temperature = combioven_state.target_temperature + 1;
-					Clear_Buffer(buffer_Rx);
+
+					if(mode_operation == COMBI_MODE_STEAM)
+					{
+						if(combioven_state.target_temperature >= MAX_TARGET_TEMP_STEAM)
+							combioven_state.target_temperature = MAX_TARGET_TEMP_STEAM;
+						else 
+							combioven_state.target_temperature = combioven_state.target_temperature + 1;
+					}
+					else {
+						if(combioven_state.target_temperature >= MAX_TARGET_TEMPERATURE)
+							combioven_state.target_temperature = MAX_TARGET_TEMPERATURE;
+						else 
+							combioven_state.target_temperature = combioven_state.target_temperature + 1;
+					}
+                    Clear_Buffer(buffer_Rx);
 					dataChanged = 1;
 				}
 
@@ -783,21 +794,37 @@ void *receive_front_thread(void *arg) {
 		}
 
 		else if (strcmp(event_name, MODE_CONVECTION_EVENT) == 0) {
+			mode_operation = COMBI_MODE_CONVECTION;
 			sprintf(buffer_Tx,MODE_CONVECTION);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
+		else if (strcmp(event_name, MODE_RECIPE_CONVECTION_EVENT) == 0) {
+			mode_operation = COMBI_MODE_CONVECTION;
+		}
+
 		else if (strcmp(event_name, MODE_COMBINED_EVENT) == 0) {
+			mode_operation = COMBI_MODE_COMBINED;
 			sprintf(buffer_Tx,MODE_COMBINED);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
 		}
 
+	   else if (strcmp(event_name, MODE_RECIPE_COMBINED_EVENT) == 0) {
+			mode_operation = COMBI_MODE_COMBINED;
+		}
+
+
 		else if (strcmp(event_name, MODE_STEAM_EVENT) == 0) {
+			mode_operation = COMBI_MODE_STEAM;
 			sprintf(buffer_Tx,MODE_STEAM);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
+		}
+
+		else if (strcmp(event_name, MODE_RECIPE_STEAM_EVENT) == 0) {
+			mode_operation = COMBI_MODE_STEAM;
 		}
 
 		else if (strcmp(event_name, MODE_LOAD_EVENT) == 0) {
@@ -1430,7 +1457,7 @@ int main(int argc, char **argv) {
 	combioven_state.target_steam    			= 0;
 	combioven_state.target_time     			= 0;
 	combioven_state.target_fanspeed 			= 25;
-	combioven_state.target_probe    			= 0;
+	combioven_state.target_probe    			= 10; //10
 	combioven_state.current_probe   			= 0;
 	combioven_state.current_humidity			= 0;
 	combioven_state.toggle_preheat  			= 0;
@@ -1559,7 +1586,7 @@ int main(int argc, char **argv) {
 				if((combioven_state.current_probe>=combioven_state.target_probe) && (combioven_state.current_temperature>combioven_state.target_temperature)){
 					combioven_state.toggle_state = FINISHED_STATE;
 					combioven_state.toggle_probe = 0;
-					relayboard_state.current_cam_temperature = 0; //se agrega para reiniciar la prueba
+					relayboard_state.current_cam_temperature = 0; //se agrega para reiniciar la lectura
 					runningState = combioven_state.toggle_state;
 					sprintf(buffer_Tx,FINISHED_PROCESS);
 			    	UART_Print(buffer_Tx);
