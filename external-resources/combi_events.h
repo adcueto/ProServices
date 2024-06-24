@@ -224,6 +224,10 @@ typedef enum{
 #define WARNING_STATE			10
 #define DIRTY_FILTER_STATE		11
 #define OVERHEAT_STATE			12
+/*Se agrega para identificar los termopar*/
+#define PAUSE_THERMO_COLD       13
+#define PAUSE_THERMO_MAIN       14
+#define PAUSE_THERMO_BOILER     16
 /*
 	toggle_state :  
 	0 = stop
