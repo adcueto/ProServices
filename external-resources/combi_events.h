@@ -191,6 +191,14 @@ typedef enum{
 #define DOOR_OPEN				"#dooropn"
 #define DOOR_CLOSED				"#doorcls"
 
+#define MULTILEVEL_ALERT_01		"#aler001"
+#define MULTILEVEL_ALERT_02		"#aler002"
+#define MULTILEVEL_ALERT_03		"#aler003"
+#define MULTILEVEL_ALERT_04		"#aler004"
+#define MULTILEVEL_ALERT_05		"#aler005"
+#define MULTILEVEL_ALERT_06		"#aler006"
+#define MULTILEVEL_ALERT_07		"#aler007"
+
 //WASH MANAGEMENT ROUTINES TO RELAYBOARD 1 BYTE
 #define	PHASE_DRAIN_WASTE		"#phas001"
 #define	PHASE_WASH_OUT			"#phas002"
