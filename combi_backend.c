@@ -1855,23 +1855,23 @@ int main(int argc, char **argv) {
 				}
 
 				else if ( (combioven_state.target_time == 0) && (recipe_active.actualstep < recipe_active.totalsteps)) {
-					sprintf(buffer_Tx,PAUSE_STOP_PROCESS);
+	
+					sprintf(buffer_Tx, "#aler%3d",((uint8_t)recipe_active.actualstep-2));
 					UART_Print(buffer_Tx);
 					printf("%s", buffer_Tx);
-					sleep_ms(500);
-					sprintf(buffer_Tx,FINISHED_PROCESS); //sprintf(buffer_Tx,PAUSE_STOP_PROCESS);
-					UART_Print(buffer_Tx);
-					printf("%s", buffer_Tx);
-					sleep_ms(500);
+
 					previousState = combioven_state.toggle_state;
-					//combioven_state.toggle_state 		= STOP_OVEN_STATE; //RDY_NEXSTEP_STATE;
+					combioven_state.toggle_state = RDY_NEXTSTEP_STATE;
 					relayboard_state.completed_step		= 0;
-					recipe_active.typestep = 0;
-					runningState = combioven_state.toggle_state;
+					runningState = RUN_MULTILEVEL_STATE;
 					dataChanged = 1;
 				}
 
 				else if ( (combioven_state.target_time == 0) && (recipe_active.actualstep == recipe_active.totalsteps)) {
+				    sprintf(buffer_Tx, "#aler%3d",((uint8_t)recipe_active.actualstep-2));
+					UART_Print(buffer_Tx);
+					printf("%s", buffer_Tx);
+					
 					combioven_state.toggle_state 		= FINISHED_STATE;
 					runningState = combioven_state.toggle_state;
 					sprintf(buffer_Tx,FINISHED_PROCESS);
