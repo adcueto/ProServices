@@ -777,7 +777,8 @@ void *receive_front_thread(void *arg) {
 			recipe_active.totalsteps 	= uidata->totalsteps;
 			recipe_active.actualstep 	= uidata->actualstep;
 			recipe_active.typestep		= uidata->typestep;
-			sprintf(buffer_Tx,"steps:%d now:%d mode:%d",(uint8_t)recipe_active.totalsteps,(uint8_t)recipe_active.actualstep,(uint8_t)recipe_active.typestep);
+			recipe_active.currlevel		= uidata->currlevel;
+			sprintf(buffer_Tx,"steps:%d now:%d mode:%d level:%d",(uint8_t)recipe_active.totalsteps,(uint8_t)recipe_active.actualstep,(uint8_t)recipe_active.typestep, (uint8_t)recipe_active.currlevel);
 			printf("%s\n",buffer_Tx);
 			sleep_ms(10);
 			relayboard_state.completed_step	= 0;
@@ -1469,6 +1470,7 @@ int main(int argc, char **argv) {
 	recipe_active.totalsteps					= 0;
 	recipe_active.actualstep					= 0;		
 	recipe_active.typestep						= 0;
+	recipe_active.currlevel						= 0;
 	encoder_options.minvalue 					= 0;
 	encoder_options.maxvalue 					= 0;
 	encoder_options.nowvalue 					= 0;
@@ -1856,7 +1858,7 @@ int main(int argc, char **argv) {
 
 				else if ( (combioven_state.target_time == 0) && (recipe_active.actualstep < recipe_active.totalsteps)) {
 	
-					sprintf(buffer_Tx, "#aler%3d",((uint8_t)recipe_active.actualstep-2));
+					sprintf(buffer_Tx, "#aler%3d",((uint8_t)recipe_active.currlevel));
 					UART_Print(buffer_Tx);
 					printf("%s", buffer_Tx);
 
