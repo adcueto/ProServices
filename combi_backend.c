@@ -719,7 +719,7 @@ void *receive_front_thread(void *arg) {
 			sprintf(buffer_Tx,"#stem%3d",(uint8_t)combioven_state.target_steam);
 			UART_Print(buffer_Tx);
 			printf("%s\n",buffer_Tx);
-			sleep_ms(1);
+			sleep_ms(1);	
 			dataChanged = 1;
 		} 
 		
@@ -1857,11 +1857,10 @@ int main(int argc, char **argv) {
 				}
 
 				else if ( (combioven_state.target_time == 0) && (recipe_active.actualstep < recipe_active.totalsteps)) {
-	
 					sprintf(buffer_Tx, "#aler%3d",((uint8_t)recipe_active.currlevel));
 					UART_Print(buffer_Tx);
 					printf("%s", buffer_Tx);
-
+					
 					previousState = combioven_state.toggle_state;
 					combioven_state.toggle_state = RDY_NEXTSTEP_STATE;
 					relayboard_state.completed_step		= 0;
@@ -1870,7 +1869,7 @@ int main(int argc, char **argv) {
 				}
 
 				else if ( (combioven_state.target_time == 0) && (recipe_active.actualstep == recipe_active.totalsteps)) {
-				    sprintf(buffer_Tx, "#aler%3d",((uint8_t)recipe_active.actualstep-2));
+					sprintf(buffer_Tx, "#aler%3d",((uint8_t)recipe_active.currlevel));
 					UART_Print(buffer_Tx);
 					printf("%s", buffer_Tx);
 					
